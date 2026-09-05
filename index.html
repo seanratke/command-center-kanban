@@ -152,7 +152,7 @@
 
   .board {
     display: grid;
-    grid-template-columns: repeat(5, minmax(230px, 1fr));
+    grid-template-columns: repeat(6, minmax(230px, 1fr));
     gap: 14px;
     overflow-x: auto;
   }
@@ -340,6 +340,7 @@ const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const STAGES = [
   { key: 'inbox', label: 'Inbox' },
+  { key: 'lab', label: 'Lab' },
   { key: 'validating', label: 'Validating' },
   { key: 'building', label: 'Building' },
   { key: 'shipped', label: 'Shipped' },
@@ -568,6 +569,7 @@ function renderBoard() {
 function emptyMessage(key) {
   return {
     inbox: 'Nothing waiting. Drop a raw idea in the box above.',
+    lab: 'Nothing being researched right now — this is where ideas go to get real data before you commit to building them.',
     validating: 'Nothing being tested right now.',
     building: 'Nothing in active build.',
     shipped: 'Nothing shipped yet — that changes soon.',
