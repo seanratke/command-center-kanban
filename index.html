@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14181F;
+    --surface: #1C222C;
+    --surface-2: #232A36;
+    --border: #2C3442;
+    --text: #E7E9ED;
+    --text-muted: #8890A0;
+    --cyan: #4FB3BF;
+    --cyan-dim: rgba(79,179,191,0.15);
+    --amber: #D98E4F;
+    --amber-dim: rgba(217,142,79,0.18);
+    --danger: #C7645A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Public Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 20px;
+    margin-bottom: 4px;
+  }
+  .wordmark {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .wordmark span { color: var(--cyan); }
+  .tagline { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+  .capture-row {
+    margin: 18px 0 22px;
+    display: flex;
+    gap: 10px;
+  }
+  .capture-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Public Sans', sans-serif;
+    font-size: 16px;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  .capture-row input:focus { border-color: var(--cyan); }
+  .capture-row input::placeholder { color: var(--text-muted); }
+  .capture-row button {
+    background: var(--cyan);
+    color: #0C1116;
+    border: none;
+    border-radius: 10px;
+    padding: 0 20px;
+    font-family: 'Public Sans', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .capture-row button:active { transform: scale(0.98); }
+
+  .toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .toolbar-row input {
+    flex: 1;
+    min-width: 160px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Public Sans', sans-serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+  }
+  .toolbar-row input:focus { border-color: var(--cyan); }
+  .toolbar-row .tbtn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-family: 'Public Sans', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .toolbar-row .tbtn:hover { color: var(--text); }
+
+  .graveyard-modal { max-width: 520px; }
+  .grave-row {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 2px;
+  }
+  .grave-row:last-child { border-bottom: none; }
+  .grave-title { font-weight: 600; font-size: 14.5px; margin: 0 0 3px; }
+  .grave-reason { color: var(--text-muted); font-size: 13px; margin: 0 0 3px; }
+  .grave-meta { color: var(--text-muted); font-size: 11px; }
+  .grave-empty { color: var(--text-muted); font-size: 14px; padding: 10px 2px; }
+
+  .decision-banner {
+    background: var(--amber-dim);
+    border: 1px solid rgba(217,142,79,0.4);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+  }
+  .decision-banner .db-text { flex: 1; min-width: 200px; }
+  .decision-banner .db-label { color: var(--amber); font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .decision-banner .db-title { font-weight: 600; font-size: 15px; }
+  .decision-banner .db-meta { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+  .db-actions { display: flex; gap: 8px; }
+  .db-actions button {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: 'Public Sans', sans-serif;
+    cursor: pointer;
+  }
+  .db-actions button.primary { background: var(--amber); color: #211405; border: none; font-weight: 600; }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(230px, 1fr));
+    gap: 14px;
+    overflow-x: auto;
+  }
+  @media (max-width: 900px) {
+    .board { grid-template-columns: 1fr; overflow-x: visible; }
+  }
+
+  .column {
+    background: rgba(255,255,255,0.015);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 120px;
+  }
+  .column-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 2px;
+  }
+  .column-head h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+  }
+  .column-head .count {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-radius: 20px;
+    padding: 2px 8px;
+  }
+  .empty-col {
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 18px 6px;
+    line-height: 1.5;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 12px 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .card:hover { border-color: #3A4353; }
+  .card-title {
+    font-weight: 600;
+    font-size: 14.5px;
+    margin: 0 0 4px;
+    line-height: 1.3;
+  }
+  .card-note {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    font-size: 11px;
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+  .heat { display: flex; gap: 2px; }
+  .heat i {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border);
+    display: inline-block;
+  }
+  .heat i.on { background: var(--amber); }
+  .card-days { color: var(--text-muted); font-size: 11px; margin-top: 6px; }
+
+  .move-row { display: flex; gap: 6px; margin-top: 8px; }
+  .move-row button {
+    flex: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 5px 0;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .move-row button:disabled { opacity: 0.3; cursor: default; }
+
+  /* Modal */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,12,16,0.6);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 50;
+  }
+  @media (min-width: 700px) {
+    .overlay { align-items: center; }
+  }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  @media (min-width: 700px) {
+    .modal { border-radius: 16px; }
+  }
+  .modal label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 14px 0 6px;
+  }
+  .modal label:first-of-type { margin-top: 0; }
+  .modal input[type=text], .modal textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Public Sans', sans-serif;
+    font-size: 15px;
+    padding: 10px 12px;
+    outline: none;
+    resize: vertical;
+  }
+  .modal textarea { min-height: 90px; }
+  .heat-picker { display: flex; gap: 8px; }
+  .heat-picker button {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .heat-picker button.active { background: var(--amber); border-color: var(--amber); color: #211405; }
+  .modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 22px;
+    gap: 10px;
+  }
+  .modal-actions .right { display: flex; gap: 10px; }
+  .btn {
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: 'Public Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-ghost { background: transparent; color: var(--danger); border: 1px solid rgba(199,100,90,0.4); }
+  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-primary { background: var(--cyan); color: #0C1116; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://yxfwduvwhruedjyrtfhx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy';
+const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STAGES = [
+  { key: 'inbox', label: 'Inbox' },
+  { key: 'validating', label: 'Validating' },
+  { key: 'building', label: 'Building' },
+  { key: 'shipped', label: 'Shipped' },
+  { key: 'killed', label: 'Killed' },
+];
+
+let state = { items: [], loaded: false, loadError: null, openItem: null, editBuffer: null, search: '', showGraveyard: false };
+
+function daysSince(ts) {
+  return Math.floor((Date.now() - ts) / 86400000);
+}
+
+function rowToItem(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    note: row.note || '',
+    tags: row.tags || [],
+    heat: row.heat || 0,
+    stage: row.stage,
+    createdAt: new Date(row.created_at).getTime(),
+    updatedAt: new Date(row.updated_at).getTime(),
+    killReason: row.kill_reason || '',
+  };
+}
+
+async function loadItems() {
+  const { data, error } = await sbClient.from('items').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('load failed', error);
+    state.loadError = error.message;
+    state.items = [];
+  } else {
+    state.items = data.map(rowToItem);
+  }
+  state.loaded = true;
+  render();
+}
+
+async function persistItem(item) {
+  const { error } = await sbClient.from('items').update({
+    title: item.title,
+    note: item.note,
+    tags: item.tags,
+    heat: item.heat,
+    stage: item.stage,
+    kill_reason: item.killReason || null,
+    updated_at: new Date(item.updatedAt).toISOString(),
+  }).eq('id', item.id);
+  if (error) console.error('update failed', error);
+}
+
+async function addItem(title) {
+  title = title.trim();
+  if (!title) return;
+  const now = new Date().toISOString();
+  const { data, error } = await sbClient.from('items').insert({
+    title, note: '', tags: [], heat: 0, stage: 'inbox', kill_reason: null,
+    created_at: now, updated_at: now,
+  }).select().single();
+  if (error) { console.error('insert failed', error); return; }
+  state.items.unshift(rowToItem(data));
+  render();
+}
+
+function touchItem(item) { item.updatedAt = Date.now(); }
+
+function moveStage(item, dir) {
+  const idx = STAGES.findIndex(s => s.key === item.stage);
+  const nextIdx = idx + dir;
+  if (nextIdx < 0 || nextIdx >= STAGES.length) return;
+  item.stage = STAGES[nextIdx].key;
+  touchItem(item);
+  persistItem(item);
+  render();
+}
+
+function killItem(item) {
+  item.stage = 'killed';
+  touchItem(item);
+  persistItem(item);
+  render();
+}
+
+async function deleteItem(id) {
+  state.items = state.items.filter(i => i.id !== id);
+  state.openItem = null;
+  render();
+  const { error } = await sbClient.from('items').delete().eq('id', id);
+  if (error) console.error('delete failed', error);
+}
+
+function openModal(item) {
+  state.openItem = item.id;
+  state.editBuffer = { title: item.title, note: item.note, tags: item.tags.join(', '), heat: item.heat };
+  render();
+}
+
+function closeModal() {
+  state.openItem = null;
+  state.editBuffer = null;
+  render();
+}
+
+function saveModal() {
+  const item = state.items.find(i => i.id === state.openItem);
+  if (!item) return;
+  const b = state.editBuffer;
+  item.title = b.title.trim() || item.title;
+  item.note = b.note;
+  item.tags = b.tags.split(',').map(t => t.trim()).filter(Boolean);
+  item.heat = b.heat;
+  touchItem(item);
+  persistItem(item);
+  closeModal();
+}
+
+function killFromModal(item) {
+  item.stage = 'killed';
+  touchItem(item);
+  persistItem(item);
+  renderModalOnly();
+}
+
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(state.items, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `command-center-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function toggleGraveyard() {
+  state.showGraveyard = !state.showGraveyard;
+  render();
+}
+
+function matchesSearch(item, term) {
+  if (!term) return true;
+  const t = term.toLowerCase();
+  return item.title.toLowerCase().includes(t)
+    || (item.note || '').toLowerCase().includes(t)
+    || item.tags.some(tag => tag.toLowerCase().includes(t));
+}
+
+function findOldestNeglected() {
+  const active = state.items.filter(i => i.stage !== 'shipped' && i.stage !== 'killed');
+  if (!active.length) return null;
+  return active.reduce((oldest, i) => i.updatedAt < oldest.updatedAt ? i : oldest, active[0]);
+}
+
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'class') e.className = v;
+    else e.setAttribute(k, v);
+  }
+  children.flat().forEach(c => { if (c) e.appendChild(c); });
+  return e;
+}
+
+function renderCard(item, idx) {
+  const stageIdx = STAGES.findIndex(s => s.key === item.stage);
+  const days = daysSince(item.updatedAt);
+
+  const heatDots = el('div', { class: 'heat' },
+    [1,2,3].map(n => el('i', { class: item.heat >= n ? 'on' : '' }))
+  );
+
+  const tagsEl = el('div', { class: 'tags' },
+    item.tags.slice(0,3).map(t => el('span', { class: 'tag', text: t }))
+  );
+
+  const foot = el('div', { class: 'card-foot' }, tagsEl, heatDots);
+
+  const moveRow = (item.stage !== 'killed') ? el('div', { class: 'move-row' },
+    el('button', {
+      disabled: stageIdx <= 0 ? 'true' : null,
+      onclick: (e) => { e.stopPropagation(); moveStage(item, -1); },
+      text: '‹ Back'
+    }),
+    el('button', {
+      disabled: stageIdx >= STAGES.length - 2 ? 'true' : null,
+      onclick: (e) => { e.stopPropagation(); moveStage(item, 1); },
+      text: item.stage === 'building' ? 'Ship ›' : 'Advance ›'
+    })
+  ) : null;
+
+  const card = el('div', { class: 'card', onclick: () => openModal(item) },
+    el('p', { class: 'card-title', text: item.title }),
+    item.note ? el('p', { class: 'card-note', text: item.note }) : null,
+    foot,
+    moveRow,
+    el('div', { class: 'card-days', text: days === 0 ? 'touched today' : `sat for ${days} day${days === 1 ? '' : 's'}` })
+  );
+  if (item.stage !== 'killed' && item.stage !== 'shipped' && item.attrs) card.setAttribute('disabled', 'true');
+  return card;
+}
+
+function renderBoard() {
+  const board = el('div', { class: 'board' });
+  STAGES.forEach(stage => {
+    const items = state.items
+      .filter(i => i.stage === stage.key && matchesSearch(i, state.search))
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+    const col = el('div', { class: 'column' },
+      el('div', { class: 'column-head' },
+        el('h2', { text: stage.label }),
+        el('span', { class: 'count', text: items.length })
+      ),
+      items.length
+        ? items.map((it, i) => renderCard(it, i))
+        : el('div', { class: 'empty-col', text: emptyMessage(stage.key) })
+    );
+    board.appendChild(col);
+  });
+  return board;
+}
+
+function emptyMessage(key) {
+  return {
+    inbox: 'Nothing waiting. Drop a raw idea in the box above.',
+    validating: 'Nothing being tested right now.',
+    building: 'Nothing in active build.',
+    shipped: 'Nothing shipped yet — that changes soon.',
+    killed: 'Nothing killed. A healthy pipeline kills things on purpose.'
+  }[key];
+}
+
+function renderDecisionBanner() {
+  const item = findOldestNeglected();
+  if (!item) return null;
+  const days = daysSince(item.updatedAt);
+  if (days < 3) return null;
+  return el('div', { class: 'decision-banner' },
+    el('div', { class: 'db-text' },
+      el('div', { class: 'db-label', text: 'Needs a decision' }),
+      el('div', { class: 'db-title', text: item.title }),
+      el('div', { class: 'db-meta', text: `Untouched for ${days} days, sitting in ${STAGES.find(s=>s.key===item.stage).label}` })
+    ),
+    el('div', { class: 'db-actions' },
+      el('button', { text: 'Kill it', onclick: () => killItem(item) }),
+      el('button', { class: 'primary', text: 'Still alive — touch it', onclick: () => { touchItem(item); persistItem(item); render(); } })
+    )
+  );
+}
+
+function renderModal() {
+  if (!state.openItem) return null;
+  const item = state.items.find(i => i.id === state.openItem);
+  if (!item) return null;
+  const b = state.editBuffer;
+
+  const titleInput = el('input', { type: 'text', value: b.title, oninput: (e) => b.title = e.target.value });
+  const noteInput = el('textarea', { oninput: (e) => b.note = e.target.value });
+  noteInput.value = b.note;
+  const tagsInput = el('input', { type: 'text', value: b.tags, oninput: (e) => b.tags = e.target.value, placeholder: 'e.g. mobile, needs-design' });
+
+  const heatPicker = el('div', { class: 'heat-picker' },
+    [1,2,3].map(n => el('button', {
+      class: b.heat >= n ? 'active' : '',
+      text: n,
+      onclick: () => { b.heat = (b.heat === n) ? 0 : n; renderModalOnly(); }
+    }))
+  );
+
+  const reasonBlock = (item.stage === 'killed') ? [
+    el('label', { text: 'Why did this die? (feeds the graveyard log)' }),
+    (() => {
+      const ta = el('textarea', { oninput: (e) => { item.killReason = e.target.value; } });
+      ta.value = item.killReason || '';
+      ta.addEventListener('blur', () => persistItem(item));
+      return ta;
+    })()
+  ] : [];
+
+  const killBtn = (item.stage !== 'killed') ? el('button', {
+    class: 'btn btn-ghost', text: 'Kill', onclick: () => killFromModal(item)
+  }) : null;
+
+  const modal = el('div', { class: 'modal' },
+    el('label', { text: 'Title' }), titleInput,
+    el('label', { text: 'Notes' }), noteInput,
+    el('label', { text: 'Tags (comma separated)' }), tagsInput,
+    el('label', { text: 'Priority heat' }), heatPicker,
+    ...reasonBlock,
+    el('div', { class: 'modal-actions' },
+      el('div', { class: 'right' },
+        el('button', { class: 'btn btn-ghost', text: 'Delete', onclick: () => deleteItem(item.id) }),
+        killBtn
+      ),
+      el('div', { class: 'right' },
+        el('button', { class: 'btn btn-secondary', text: 'Cancel', onclick: closeModal }),
+        el('button', { class: 'btn btn-primary', text: 'Save', onclick: saveModal })
+      )
+    )
+  );
+  return el('div', { class: 'overlay', onclick: (e) => { if (e.target.classList.contains('overlay')) closeModal(); } }, modal);
+}
+
+function renderGraveyard() {
+  if (!state.showGraveyard) return null;
+  const killed = state.items.filter(i => i.stage === 'killed').sort((a,b) => b.updatedAt - a.updatedAt);
+  const rows = killed.length
+    ? killed.map(i => el('div', { class: 'grave-row' },
+        el('p', { class: 'grave-title', text: i.title }),
+        el('p', { class: 'grave-reason', text: i.killReason ? i.killReason : 'No reason logged yet.' }),
+        el('p', { class: 'grave-meta', text: `killed ${daysSince(i.updatedAt)} days ago` })
+      ))
+    : [el('p', { class: 'grave-empty', text: 'Nothing killed yet. Once something is, the reason lands here so you can spot patterns.' })];
+
+  const modal = el('div', { class: 'modal graveyard-modal' },
+    el('label', { text: 'Graveyard' }),
+    ...rows,
+    el('div', { class: 'modal-actions' },
+      el('div', {}),
+      el('div', { class: 'right' },
+        el('button', { class: 'btn btn-secondary', text: 'Close', onclick: toggleGraveyard })
+      )
+    )
+  );
+  return el('div', { class: 'overlay', onclick: (e) => { if (e.target.classList.contains('overlay')) toggleGraveyard(); } }, modal);
+}
+
+function renderModalOnly() {
+  const existing = document.querySelector('.overlay');
+  if (existing) existing.replaceWith(renderModal());
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  if (!state.loaded) {
+    app.appendChild(el('p', { text: 'Loading…', style: 'color:#8890A0' }));
+    return;
+  }
+
+  app.appendChild(el('header', {},
+    el('h1', { class: 'wordmark' }, (() => {
+      const h = document.createElement('h1');
+      h.className = 'wordmark';
+      h.innerHTML = 'Command<span> Center</span>';
+      return h;
+    })()),
+  ));
+  app.appendChild(el('p', { class: 'tagline', text: 'Every idea gets a home. Nothing rots in silence.' }));
+
+  if (state.loadError) {
+    app.appendChild(el('p', { style: 'color:#C7645A;font-size:13px;margin:0 0 12px;', text: `Sync error: ${state.loadError}` }));
+  }
+
+  const inputEl = el('input', {
+    type: 'text',
+    placeholder: 'Dump an idea — press enter',
+    onkeydown: (e) => { if (e.key === 'Enter') { addItem(e.target.value); e.target.value = ''; } }
+  });
+  const captureRow = el('div', { class: 'capture-row' },
+    inputEl,
+    el('button', { text: 'Add', onclick: () => { addItem(inputEl.value); inputEl.value = ''; inputEl.focus(); } })
+  );
+  app.appendChild(captureRow);
+
+  const searchInput = el('input', {
+    type: 'text', placeholder: 'Search titles, notes, tags…', value: state.search,
+    oninput: (e) => { state.search = e.target.value; renderBoardOnly(); }
+  });
+  const toolbar = el('div', { class: 'toolbar-row' },
+    searchInput,
+    el('button', { class: 'tbtn', text: 'Graveyard', onclick: toggleGraveyard }),
+    el('button', { class: 'tbtn', text: 'Export backup', onclick: exportBackup })
+  );
+  app.appendChild(toolbar);
+
+  const banner = renderDecisionBanner();
+  if (banner) app.appendChild(banner);
+
+  app.appendChild(renderBoard());
+
+  const modal = renderModal();
+  if (modal) app.appendChild(modal);
+
+  const grave = renderGraveyard();
+  if (grave) app.appendChild(grave);
+}
+
+function renderBoardOnly() {
+  const old = document.querySelector('.board');
+  if (old) old.replaceWith(renderBoard());
+}
+
+loadItems();
+</script>
+</body>
+</html>
