@@ -69,6 +69,7 @@ function cardHtml(op) {
   const promoted = op.status === 'promoted';
   return `
     <article class="card ${topClass} ${discardedClass}" data-id="${op.id}">
+      <p style="font-size: 0.95rem; color: #374151; background: #f9fafb; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.75rem;">${escapeHtml(op.key_summary || "")}</p>
       <div class="card-head">
         <h3>${op.is_top_recommendation ? '⭐ ' : ''}${escapeHtml(op.title)}</h3>
         <span class="confidence ${confidenceClass[op.confidence] || ''}">${op.confidence}</span>

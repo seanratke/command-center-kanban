@@ -107,6 +107,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       what_to_build_first: op.what_to_build_first,
       why_others_missed_it: op.why_others_missed_it,
       confidence: op.confidence,
+      key_summary: op.key_summary,
+      rank: op.rank,
       is_top_recommendation: op.is_top_recommendation === true,
       status: "new",
       raw_report_markdown: parsed.raw_report_markdown,
