@@ -69,7 +69,8 @@ function cardHtml(op) {
   const promoted = op.status === 'promoted';
   return `
     <article class="card ${topClass} ${discardedClass}" data-id="${op.id}">
-      <p style="font-size: 0.95rem; color: #374151; background: #f9fafb; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.75rem;">${escapeHtml(op.key_summary || "")}</p>
+      <div style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 0.35rem;">Plain-Language Summary</div>
+      <p style="font-size: 0.95rem; color: #111827; background: #eef2ff; border-left: 4px solid #4f46e5; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem;">${escapeHtml(op.key_summary || "")}</p>
       <div class="card-head">
         <h3>${op.is_top_recommendation ? '⭐ ' : ''}${escapeHtml(op.title)}</h3>
         <span class="confidence ${confidenceClass[op.confidence] || ''}">${op.confidence}</span>
