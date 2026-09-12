@@ -10,5 +10,10 @@
       "source": "/opportunities",
       "destination": "/opportunities.html"
     }
-  ]
+  ],
+  "functions": {
+    "api/run-opportunity-engine.ts": {
+      "maxDuration": 300
+    }
+  }
 }
