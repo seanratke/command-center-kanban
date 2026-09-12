@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Opportunity Feed</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; max-width: 760px; margin: 0 auto; padding: 2rem 1rem; color: #111827; }
+  h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; }
+  h2 { font-size: 1.1rem; font-weight: 600; margin: 2rem 0 1rem; color: #374151; }
+  .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card.top { border: 2px solid #111827; }
+  .card.discarded { opacity: 0.5; }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+  .card-head h3 { font-size: 1.15rem; font-weight: 700; margin: 0; }
+  .confidence { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
+  .confidence.high { color: #16a34a; }
+  .confidence.medium { color: #ca8a04; }
+  .confidence.speculative { color: #6b7280; }
+  dl { margin-top: 0.75rem; display: grid; gap: 0.5rem; }
+  dt { font-weight: 600; font-size: 0.85rem; }
+  dd { margin: 0; }
+  .actions { margin-top: 1rem; display: flex; gap: 0.5rem; }
+  button { font-size: 0.8rem; padding: 0.35rem 0.75rem; border-radius: 6px; cursor: pointer; }
+  .btn-promote { border: 1px solid #111827; background: white; color: #111827; }
+  .btn-promote.done { background: #111827; color: white; }
+  .btn-discard { border: 1px solid #d1d5db; background: white; color: #6b7280; }
+  .empty { color: #6b7280; }
+</style>
+</head>
+<body>
+  <h1>Opportunity Feed</h1>
+  <div id="feed"><p class="empty">Loading...</p></div>
+
+<script>
+const confidenceClass = { high: 'high', medium: 'medium', speculative: 'speculative' };
+
+async function loadFeed() {
+  const feedEl = document.getElementById('feed');
+  try {
+    const res = await fetch('/api/opportunities/list');
+    const data = await res.json();
+    const items = data.opportunities || [];
+
+    if (items.length === 0) {
+      feedEl.innerHTML = '<p class="empty">No opportunities yet — the first daily run hasn\'t landed.</p>';
+      return;
+    }
+
+    const grouped = {};
+    items.forEach((op) => {
+      (grouped[op.report_date] = grouped[op.report_date] || []).push(op);
+    });
+    const dates = Object.keys(grouped).sort().reverse();
+
+    feedEl.innerHTML = dates.map((date) => `
+      <h2>${date}</h2>
+      ${grouped[date].map(cardHtml).join('')}
+    `).join('');
+  } catch (err) {
+    feedEl.innerHTML = '<p class="empty">Failed to load feed. Check back later.</p>';
+    console.error(err);
+  }
+}
+
+function cardHtml(op) {
+  const topClass = op.is_top_recommendation ? 'top' : '';
+  const discardedClass = op.status === 'discarded' ? 'discarded' : '';
+  const promoted = op.status === 'promoted';
+  return `
+    <article class="card ${topClass} ${discardedClass}" data-id="${op.id}">
+      <div class="card-head">
+        <h3>${op.is_top_recommendation ? '⭐ ' : ''}${escapeHtml(op.title)}</h3>
+        <span class="confidence ${confidenceClass[op.confidence] || ''}">${op.confidence}</span>
+      </div>
+      <dl>
+        <div><dt>The gap</dt><dd>${escapeHtml(op.the_gap)}</dd></div>
+        <div><dt>First-principles take</dt><dd>${escapeHtml(op.first_principles_take)}</dd></div>
+        <div><dt>Why now</dt><dd>${escapeHtml(op.why_now)}</dd></div>
+        <div><dt>What to build first</dt><dd>${escapeHtml(op.what_to_build_first)}</dd></div>
+        <div><dt>Why others missed it</dt><dd>${escapeHtml(op.why_others_missed_it)}</dd></div>
+      </dl>
+      <div class="actions">
+        <button class="btn-promote ${promoted ? 'done' : ''}" onclick="promote('${op.id}')">${promoted ? 'Promoted ✓' : 'Promote to Inbox'}</button>
+        <button class="btn-discard" onclick="discardItem('${op.id}')">Discard</button>
+      </div>
+    </article>
+  `;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str || '';
+  return div.innerHTML;
+}
+
+async function promote(id) {
+  await fetch(`/api/opportunities/${id}/promote`, { method: 'POST' });
+  loadFeed();
+}
+
+async function discardItem(id) {
+  await fetch(`/api/opportunities/${id}/discard`, { method: 'POST' });
+  loadFeed();
+}
+
+loadFeed();
+</script>
+</body>
+</html>
