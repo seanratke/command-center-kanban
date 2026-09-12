@@ -4,5 +4,11 @@
       "path": "/api/run-opportunity-engine",
       "schedule": "0 14 * * *"
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/opportunities",
+      "destination": "/opportunities.html"
+    }
   ]
 }
