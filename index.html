@@ -411,23 +411,19 @@ async function persistItem(item) {
 async function addItem(title) {
   title = title.trim();
   if (!title) return;
-  const now = new Date().toISOString();
-  const { data, error } = await sbClient.from('items').insert({
-    title, note: '', tags: [], heat: 0, stage: 'inbox', kill_reason: null,
-    created_at: now, updated_at: now,
-  }).select().single();
-  if (error) { console.error('insert failed', error); return; }
-  state.items.unshift(rowToItem(data));
-  render();
-
-  fetch('/api/review-panel', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: data.id, action: 'review' })
-  }).then(async () => {
+  try {
+    const res = await fetch('/api/items-add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title })
+    });
+    const result = await res.json();
+    if (!res.ok || !result.item) { console.error('add failed', result); return; }
     await loadItems();
     render();
-  }).catch(e => console.error('Auto-review trigger failed:', e));
+  } catch (e) {
+    console.error('addItem failed:', e);
+  }
 }
 
 function touchItem(item) { item.updatedAt = Date.now(); }

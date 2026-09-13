@@ -1,4 +1,5 @@
 // api/opportunities/[id]/promote.ts
+export const maxDuration = 120;
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 
@@ -61,7 +62,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (newItem) {
-      fetch("https://command-center-ashen-gamma.vercel.app/api/review-panel", {
+      await fetch("https://command-center-ashen-gamma.vercel.app/api/review-panel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id: newItem.id, action: "review" }),
