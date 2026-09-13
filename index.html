@@ -826,7 +826,8 @@ function render() {
   ));
   app.appendChild(el('p', { class: 'tagline', text: 'Every idea gets a home. Nothing rots in silence.' }));
   app.appendChild(el('p', { style: 'margin:0 0 20px;' }, [
-    el('a', { href: '/opportunities', style: 'color:#8890A0;font-size:13px;text-decoration:underline;', text: 'View Opportunities Feed →' })
+    el('a', { href: '/opportunities', style: 'color:#8890A0;font-size:13px;text-decoration:underline;', text: 'View Opportunities Feed →' }),
+    el('a', { href: '/inventors', style: 'color:#8890A0;font-size:13px;text-decoration:underline;margin-left:16px;', text: 'View Inventor Pool →' })
   ]));
 
   if (state.loadError) {
