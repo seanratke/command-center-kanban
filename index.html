@@ -695,6 +695,9 @@ function render() {
     })()),
   ));
   app.appendChild(el('p', { class: 'tagline', text: 'Every idea gets a home. Nothing rots in silence.' }));
+  app.appendChild(el('p', { style: 'margin:0 0 20px;' }, [
+    el('a', { href: '/opportunities', style: 'color:#8890A0;font-size:13px;text-decoration:underline;', text: 'View Opportunities Feed →' })
+  ]));
 
   if (state.loadError) {
     app.appendChild(el('p', { style: 'color:#C7645A;font-size:13px;margin:0 0 12px;', text: `Sync error: ${state.loadError}` }));
