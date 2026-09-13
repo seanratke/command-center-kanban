@@ -48,6 +48,38 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true });
     }
 
+    if (action === "promote_synthesis") {
+      const { data: idea, error: fetchError } = await supabase
+        .from("synthesis_ideas")
+        .select("*")
+        .eq("id", id)
+        .single();
+      if (fetchError || !idea) return res.status(404).json({ error: "synthesis idea not found" });
+
+      const now = new Date().toISOString();
+      const note = `${idea.concept}\n\nMechanism: ${idea.mechanism}\n\nCombines: ${idea.source_items}`;
+
+      const { error: insertError } = await supabase.from("items").insert({
+        title: idea.title,
+        note,
+        tags: ["synthesis"],
+        heat: 0,
+        stage: "inbox",
+        kill_reason: null,
+        created_at: now,
+        updated_at: now,
+      });
+      if (insertError) throw new Error(insertError.message);
+
+      await supabase.from("synthesis_ideas").update({ status: "promoted" }).eq("id", id);
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === "discard_synthesis") {
+      await supabase.from("synthesis_ideas").update({ status: "discarded" }).eq("id", id);
+      return res.status(200).json({ success: true });
+    }
+
     if (action === "reject_nomination") {
       await supabase.from("inventor_nominations").update({ status: "rejected" }).eq("id", id);
       return res.status(200).json({ success: true });

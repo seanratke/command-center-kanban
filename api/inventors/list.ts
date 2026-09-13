@@ -30,5 +30,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ideas: ideas.filter((i) => i.inventor_id === inv.id),
   }));
 
-  return res.status(200).json({ inventors: inventorsWithIdeas, nominations: nominations || [] });
+  const { data: synthesis, error: synthError } = await supabase
+    .from("synthesis_ideas")
+    .select("*")
+    .eq("status", "new")
+    .order("created_at", { ascending: false });
+  if (synthError) return res.status(500).json({ error: synthError.message });
+
+  return res.status(200).json({ inventors: inventorsWithIdeas, nominations: nominations || [], synthesis: synthesis || [] });
 }
