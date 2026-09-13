@@ -34,7 +34,7 @@
 </head>
 <body>
   <h1>Inventor Pool</h1>
-  <a href="/" class="back-link">&larr; Back to Command Center</a>
+  <div style="display:flex;gap:10px;margin:0 0 24px;flex-wrap:wrap;"><a href="/" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Command Center</a><a href="/opportunities" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Opportunities Feed</a><a href="/inventors" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #a21caf;color:#a21caf;font-size:13px;font-weight:600;text-decoration:none;">Inventor Pool</a></div>
   <div id="content"><p class="empty">Loading...</p></div>
 
 <script>
@@ -109,8 +109,28 @@ function nominationHtml(n) {
   `;
 }
 
+let editingInventorId = null;
+
 function inventorHtml(inv) {
   const activeIdeas = (inv.ideas || []).filter(i => i.status === 'new');
+
+  if (editingInventorId === inv.id) {
+    return `
+      <div class="inventor-block" id="inv-${inv.id}">
+        <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">Name</label>
+        <input type="text" id="edit-name-${inv.id}" value="${escapeHtml(inv.name)}" style="width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:6px;font-size:0.9rem;" />
+        <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">Domain</label>
+        <input type="text" id="edit-domain-${inv.id}" value="${escapeHtml(inv.domain)}" style="width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:6px;font-size:0.9rem;" />
+        <label style="font-size:0.8rem;font-weight:600;display:block;margin-bottom:4px;">Persona</label>
+        <textarea id="edit-persona-${inv.id}" rows="6" style="width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:10px;border:1px solid #d1d5db;border-radius:6px;font-size:0.85rem;">${escapeHtml(inv.persona)}</textarea>
+        <div class="idea-actions">
+          <button class="btn-promote" onclick="saveInventor('${inv.id}')">Save</button>
+          <button class="btn-discard" onclick="cancelEditInventor()">Cancel</button>
+        </div>
+      </div>
+    `;
+  }
+
   return `
     <div class="inventor-block">
       <div class="inventor-header">
@@ -118,11 +138,30 @@ function inventorHtml(inv) {
         <span class="inventor-domain">${escapeHtml(inv.domain)}</span>
       </div>
       <p class="inventor-persona">${escapeHtml(inv.persona)}</p>
+      <button class="btn-discard" style="margin-bottom:0.75rem;" onclick="startEditInventor('${inv.id}')">Edit persona</button>
       ${activeIdeas.length === 0
         ? '<p class="empty">No new ideas from this inventor yet.</p>'
         : activeIdeas.map(ideaHtml).join('')}
     </div>
   `;
+}
+
+function startEditInventor(id) { editingInventorId = id; render(); }
+function cancelEditInventor() { editingInventorId = null; render(); }
+
+async function saveInventor(id) {
+  const name = document.getElementById('edit-name-' + id).value.trim();
+  const domain = document.getElementById('edit-domain-' + id).value.trim();
+  const persona = document.getElementById('edit-persona-' + id).value.trim();
+  if (!name || !domain || !persona) { alert('All fields are required.'); return; }
+
+  await fetch('/api/inventors/actions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'update_inventor', id, name, domain, persona })
+  });
+  editingInventorId = null;
+  await loadData();
 }
 
 function ideaHtml(idea) {

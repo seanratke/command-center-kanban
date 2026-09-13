@@ -10,7 +10,7 @@ function extractJson(text: string): any {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") return res.status(405).json({ error: "method not allowed" });
-  const { action, id } = req.body || {};
+  const { action, id, name, domain, persona } = req.body || {};
   if (!action || !id) return res.status(400).json({ error: "action and id are required" });
 
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
@@ -118,6 +118,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       await supabase.from("inventor_nominations").update({ status: "approved" }).eq("id", id);
       return res.status(200).json({ success: true, name: drafted.name });
+    }
+
+    if (action === "update_inventor") {
+      const { error: updateError } = await supabase
+        .from("inventors")
+        .update({ name, domain, persona })
+        .eq("id", id);
+      if (updateError) throw new Error(updateError.message);
+      return res.status(200).json({ success: true });
     }
 
     return res.status(400).json({ error: "unknown action" });
