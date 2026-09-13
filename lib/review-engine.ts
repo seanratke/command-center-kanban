@@ -18,7 +18,7 @@ async function runLabAssistant(anthropic: Anthropic, item: any, participationPat
 
   const message = await anthropic.messages.create({
     model: "claude-opus-5",
-    max_tokens: 4000,
+    max_tokens: 8000,
     system: labPrompt,
     messages: [{ role: "user", content: userContent }],
   });
