@@ -7,6 +7,14 @@
     {
       "path": "/api/inventor-pool",
       "schedule": "0 15 * * 1"
+    },
+    {
+      "path": "/api/resurrection-check",
+      "schedule": "0 16 * * 1"
+    },
+    {
+      "path": "/api/synthesis",
+      "schedule": "0 17 * * 1"
     }
   ],
   "rewrites": [
