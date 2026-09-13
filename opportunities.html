@@ -69,10 +69,22 @@ if ("serviceWorker" in navigator) {
     <button class="tab-btn" data-filter="human_needs" onclick="setFilter('human_needs')">Human Needs</button>
     <button class="tab-btn" data-filter="watchlist" onclick="setFilter('watchlist')">Watchlist</button>
   </div>
+  <div style="margin:0 0 1.5rem;">
+    <label style="font-size:0.8rem;color:#6b7280;margin-right:8px;">Confidence:</label>
+    <select onchange="setConfidenceFilter(this.value)" style="padding:6px 10px;border-radius:6px;border:1px solid #d1d5db;font-size:0.85rem;">
+      <option value="all">All confidence levels</option>
+      <option value="high">High only</option>
+      <option value="medium">Medium only</option>
+      <option value="speculative">Speculative only</option>
+    </select>
+  </div>
   <div id="feed"><p class="empty">Loading...</p></div>
 
 <script>
 let currentFilter = 'all';
+let currentConfidenceFilter = 'all';
+
+function setConfidenceFilter(val) { currentConfidenceFilter = val; render(); }
 let allItems = [];
 let watchlistIdeas = [];
 
@@ -139,6 +151,9 @@ function render() {
       const cat = op.category || 'main';
       (byBoard[cat] = byBoard[cat] || []).push(op);
     });
+    if (currentConfidenceFilter !== 'all') {
+      Object.keys(byBoard).forEach((k) => { byBoard[k] = byBoard[k].filter((op) => op.confidence === currentConfidenceFilter); });
+    }
     Object.keys(byBoard).forEach((k) => byBoard[k].sort((a, b) => (a.rank || 99) - (b.rank || 99)));
 
     const sections = boardsToShow.map((boardKey) => boardSectionHtml(boardKey, byBoard[boardKey])).join('');
