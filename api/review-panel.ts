@@ -55,6 +55,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         update.stage = "lab";
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
       }
+      if (result.participation_path) update.participation_path = result.participation_path;
 
       const { error: updateError } = await supabase.from("items").update(update).eq("id", id);
       if (updateError) throw new Error(updateError.message);
@@ -77,6 +78,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         update.stage = "lab";
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
       }
+      if (result.participation_path) update.participation_path = result.participation_path;
 
       const { error: updateError } = await supabase.from("items").update(update).eq("id", id);
       if (updateError) throw new Error(updateError.message);

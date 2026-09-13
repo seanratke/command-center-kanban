@@ -379,6 +379,7 @@ function rowToItem(row) {
     reviewAnswers: row.review_answers || null,
     rejectionReport: row.rejection_report || null,
     overrideUsed: row.override_used || false,
+    participationPath: row.participation_path || null,
   };
 }
 
@@ -638,6 +639,15 @@ function renderReviewSection(item) {
   return null;
 }
 
+function renderParticipationPath(item) {
+  if (!item.participationPath) return null;
+  const p = item.participationPath;
+  return el('div', { style: 'margin:8px 0;padding:10px;border:1px dashed var(--amber);border-radius:8px;font-size:13px;background:var(--amber-dim);' },
+    el('p', { text: 'Path to participation: ' + (p.model || ''), style: 'font-weight:600;margin:0 0 4px;color:var(--amber);' }),
+    p.first_move ? el('p', { text: 'First move: ' + p.first_move, style: 'margin:0;' }) : null
+  );
+}
+
 function renderCard(item, idx) {
 
   const stageIdx = STAGES.findIndex(s => s.key === item.stage);
@@ -670,6 +680,7 @@ function renderCard(item, idx) {
     el('p', { class: 'card-title', text: item.title }),
     item.note ? el('p', { class: 'card-note', text: item.note }) : null,
     renderReviewSection(item),
+    renderParticipationPath(item),
     foot,
     moveRow,
     el('div', { class: 'card-days', text: days === 0 ? 'touched today' : `sat for ${days} day${days === 1 ? '' : 's'}` })
