@@ -1,10 +1,10 @@
 {
-  "name": "Opportunity Feed",
-  "short_name": "Opp Feed",
-  "start_url": "/opportunities",
+  "name": "Command Center",
+  "short_name": "Cmd Center",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#111827",
+  "background_color": "#14181F",
+  "theme_color": "#14181F",
   "icons": [
     {
       "src": "/icon-192.png",
