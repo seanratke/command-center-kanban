@@ -34,6 +34,7 @@
   .btn-promote.done { background: #111827; color: white; }
   .btn-discard { border: 1px solid #d1d5db; background: white; color: #6b7280; }
   .empty { color: #6b7280; font-style: italic; }
+
   .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; position: sticky; top: 0; background: white; padding: 0.5rem 0; z-index: 10; }
   .tab-btn { font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 999px; border: 2px solid #e5e7eb; background: white; color: #6b7280; cursor: pointer; }
   .tab-btn.active { border-color: #111827; background: #111827; color: white; }
@@ -182,6 +183,8 @@ async function promote(id) {
 
 async function discardItem(id) {
   await fetch(`/api/opportunities/${id}/discard`, { method: 'POST' });
+  loadFeed();
+}
 
 loadFeed();
 </script>
