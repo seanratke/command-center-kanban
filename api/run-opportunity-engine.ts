@@ -1,18 +1,4 @@
 // api/run-opportunity-engine.ts
-//
-// Daily Opportunities Engine — calls Claude (Opus 5) with the Opportunity
-// Engine system prompt, parses the JSON it returns, and writes each
-// opportunity as a row into the `opportunities` Supabase table.
-//
-// Triggered daily by the cron entry in vercel.json.
-//
-// Env vars required (set in Vercel project settings, and in a local .env
-// file if you want to test with `vercel dev`):
-//   ANTHROPIC_API_KEY
-//   SUPABASE_URL                (https://yxfwduvwhruedjyrtfhx.supabase.co)
-//   SUPABASE_SERVICE_ROLE_KEY
-//   CRON_SECRET                 (any random string you make up yourself)
-
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
@@ -20,7 +6,10 @@ import fs from "fs";
 import path from "path";
 
 interface OpportunityItem {
+  rank: number;
   title: string;
+  key_summary: string;
+  sean_fit: string;
   the_gap: string;
   first_principles_take: string;
   why_now: string;
@@ -32,7 +21,11 @@ interface OpportunityItem {
 
 interface EngineResponse {
   today_signal: string;
-  opportunities: OpportunityItem[];
+  boards: {
+    main: OpportunityItem[];
+    far_out: OpportunityItem[];
+    canada_bc: OpportunityItem[];
+  };
   discarded_but_noted: string[];
   raw_report_markdown: string;
 }
@@ -52,9 +45,6 @@ function extractJson(text: string): EngineResponse {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Vercel Cron sends "Authorization: Bearer <CRON_SECRET>" automatically
-  // when CRON_SECRET is set as an env var — this blocks anyone else from
-  // triggering a paid API call by hitting the URL directly.
   const authHeader = req.headers.authorization;
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return res.status(401).json({ error: "unauthorized" });
@@ -62,7 +52,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const systemPrompt = loadSystemPrompt();
-
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
     const message = await anthropic.messages.create({
@@ -87,8 +76,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const parsed = extractJson((textBlock as any).text);
 
-    if (!parsed.opportunities || !Array.isArray(parsed.opportunities)) {
-      throw new Error("Response JSON missing 'opportunities' array");
+    if (!parsed.boards) {
+      throw new Error("Response JSON missing 'boards' object");
     }
 
     const supabase = createClient(
@@ -97,22 +86,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     );
 
     const today = new Date().toISOString().slice(0, 10);
+    const boardNames: (keyof typeof parsed.boards)[] = ["main", "far_out", "canada_bc"];
 
-    const rows = parsed.opportunities.map((op) => ({
-      report_date: today,
-      title: op.title,
-      the_gap: op.the_gap,
-      first_principles_take: op.first_principles_take,
-      why_now: op.why_now,
-      what_to_build_first: op.what_to_build_first,
-      why_others_missed_it: op.why_others_missed_it,
-      confidence: op.confidence,
-      key_summary: op.key_summary,
-      rank: op.rank,
-      is_top_recommendation: op.is_top_recommendation === true,
-      status: "new",
-      raw_report_markdown: parsed.raw_report_markdown,
-    }));
+    const rows: any[] = [];
+    for (const boardName of boardNames) {
+      const items = parsed.boards[boardName] || [];
+      for (const op of items) {
+        rows.push({
+          report_date: today,
+          category: boardName,
+          rank: op.rank,
+          title: op.title,
+          key_summary: op.key_summary,
+          sean_fit: op.sean_fit,
+          the_gap: op.the_gap,
+          first_principles_take: op.first_principles_take,
+          why_now: op.why_now,
+          what_to_build_first: op.what_to_build_first,
+          why_others_missed_it: op.why_others_missed_it,
+          confidence: op.confidence,
+          is_top_recommendation: op.is_top_recommendation === true,
+          status: "new",
+          raw_report_markdown: parsed.raw_report_markdown,
+        });
+      }
+    }
+
+    if (rows.length === 0) {
+      throw new Error("No opportunities returned across any board");
+    }
 
     const { error } = await supabase.from("opportunities").insert(rows);
 
