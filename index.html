@@ -373,6 +373,12 @@ function rowToItem(row) {
     createdAt: new Date(row.created_at).getTime(),
     updatedAt: new Date(row.updated_at).getTime(),
     killReason: row.kill_reason || '',
+    reviewStatus: row.review_status || null,
+    reviewTranscript: row.review_transcript || null,
+    reviewQuestions: row.review_questions || null,
+    reviewAnswers: row.review_answers || null,
+    rejectionReport: row.rejection_report || null,
+    overrideUsed: row.override_used || false,
   };
 }
 
@@ -518,7 +524,96 @@ function el(tag, attrs, ...children) {
   return e;
 }
 
+async function callReviewPanel(id, action, extra) {
+  const body = Object.assign({ id, action }, extra || {});
+  const res = await fetch('/api/review-panel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) { alert('Review panel error: ' + (await res.text())); return null; }
+  return res.json();
+}
+
+async function runReview(item) {
+  const btn = event ? event.target : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Reviewing...'; }
+  await callReviewPanel(item.id, 'review');
+  await loadItems();
+  render();
+}
+
+async function submitAnswers(item) {
+  const qs = item.reviewQuestions || [];
+  const answers = {};
+  for (let i = 0; i < qs.length; i++) {
+    const a = window.prompt(qs[i].question + '\n\n(Approve leans: ' + qs[i].if_yes + ' / Reject leans: ' + qs[i].if_no + ')');
+    if (a === null) return;
+    answers[i] = a;
+  }
+  await callReviewPanel(item.id, 'answer', { answers });
+  await loadItems();
+  render();
+}
+
+async function submitOverride(item) {
+  const reasoning = window.prompt('Why do you want to override the panel\'s rejection?');
+  if (!reasoning) return;
+  await callReviewPanel(item.id, 'override', { reasoning });
+  await loadItems();
+  render();
+}
+
+function renderReviewSection(item) {
+  if (item.stage !== 'inbox') return null;
+  const wrap = el('div', { class: 'review-section', style: 'margin:10px 0;padding:10px;border:1px dashed var(--border);border-radius:8px;font-size:13px;' });
+
+  if (!item.reviewStatus) {
+    wrap.appendChild(el('button', {
+      text: 'Run panel review',
+      onclick: (e) => { e.stopPropagation(); runReview(item); }
+    }));
+    return wrap;
+  }
+
+  if (item.reviewStatus === 'needs_input') {
+    wrap.appendChild(el('p', { text: 'Panel has questions for you:', style: 'font-weight:600;margin:0 0 6px;' }));
+    (item.reviewQuestions || []).forEach(q => {
+      wrap.appendChild(el('p', { text: '- ' + q.question, style: 'margin:0 0 4px;' }));
+    });
+    wrap.appendChild(el('button', {
+      text: 'Answer questions',
+      onclick: (e) => { e.stopPropagation(); submitAnswers(item); }
+    }));
+    return wrap;
+  }
+
+  if (item.reviewStatus === 'rejected') {
+    const r = item.rejectionReport || {};
+    wrap.appendChild(el('p', { text: 'Panel rejected: ' + (r.main_reason || ''), style: 'font-weight:600;margin:0 0 6px;color:var(--text-danger);' }));
+    if (r.reconsider_if) wrap.appendChild(el('p', { text: 'Reconsider if: ' + r.reconsider_if, style: 'margin:0 0 6px;' }));
+    wrap.appendChild(el('button', {
+      text: 'Override and send to Lab',
+      onclick: (e) => { e.stopPropagation(); submitOverride(item); }
+    }));
+    return wrap;
+  }
+
+  if (item.reviewStatus === 'approved') {
+    wrap.appendChild(el('p', { text: 'Panel approved -- moved to Lab.', style: 'margin:0;color:var(--text-success);' }));
+    return wrap;
+  }
+
+  if (item.reviewStatus === 'overridden') {
+    wrap.appendChild(el('p', { text: 'You overrode the panel\'s rejection -- moved to Lab.', style: 'margin:0;' }));
+    return wrap;
+  }
+
+  return null;
+}
+
 function renderCard(item, idx) {
+
   const stageIdx = STAGES.findIndex(s => s.key === item.stage);
   const days = daysSince(item.updatedAt);
 
@@ -548,6 +643,7 @@ function renderCard(item, idx) {
   const card = el('div', { class: 'card', onclick: () => openModal(item) },
     el('p', { class: 'card-title', text: item.title }),
     item.note ? el('p', { class: 'card-note', text: item.note }) : null,
+    renderReviewSection(item),
     foot,
     moveRow,
     el('div', { class: 'card-days', text: days === 0 ? 'touched today' : `sat for ${days} day${days === 1 ? '' : 's'}` })
