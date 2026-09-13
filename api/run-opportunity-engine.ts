@@ -17,36 +17,31 @@ interface OpportunityItem {
   why_others_missed_it: string;
   confidence: "high" | "medium" | "speculative";
   is_top_recommendation: boolean;
+  who_this_is_for?: string;
+  research_grounding?: string;
 }
 
 interface EngineResponse {
   today_signal: string;
+  watchlist_flags: { seed_idea_title: string; note: string }[];
   boards: {
     main: OpportunityItem[];
     far_out: OpportunityItem[];
     canada_bc: OpportunityItem[];
+    human_needs: OpportunityItem[];
   };
   discarded_but_noted: string[];
   raw_report_markdown: string;
 }
 
 function loadSystemPrompt(): string {
-  const promptPath = path.join(process.cwd(), "lib", "opportunity-engine-prompt.md");
-  return fs.readFileSync(promptPath, "utf-8");
+  return fs.readFileSync(path.join(process.cwd(), "lib", "opportunity-engine-prompt.md"), "utf-8");
 }
 
 function extractJson(text: string): EngineResponse {
-  const cleaned = text
-    .trim()
-    .replace(/^```json\s*/i, "")
-    .replace(/^```\s*/i, "")
-    .replace(/```\s*$/i, "");
+  const cleaned = text.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "");
   return JSON.parse(cleaned);
 }
-
-export const config = {
-  maxDuration: 800,
-};
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const authHeader = req.headers.authorization;
@@ -55,6 +50,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
+    const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+
+    const { data: seedIdeas } = await supabase
+      .from("seed_ideas")
+      .select("id, title, description")
+      .eq("status", "active");
+
+    let watchlistBlock = "";
+    if (seedIdeas && seedIdeas.length > 0) {
+      watchlistBlock =
+        "\n\nACTIVE WATCHLIST IDEAS:\n" +
+        seedIdeas.map((s, i) => `${i + 1}. Title: ${s.title}\n   Description: ${s.description || "(no description)"}`).join("\n");
+    }
+
     const systemPrompt = loadSystemPrompt();
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -68,29 +77,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           content:
             "Run today's scan now. Today's date is " +
             new Date().toISOString().slice(0, 10) +
-            ". Return ONLY the JSON object described in your instructions — no other text.",
+            "." + watchlistBlock +
+            "\n\nReturn ONLY the JSON object described in your instructions — no other text.",
         },
       ],
     });
 
     const textBlock = message.content.find((b: any) => b.type === "text");
-    if (!textBlock) {
-      throw new Error("No text content returned from Claude");
-    }
+    if (!textBlock) throw new Error("No text content returned from Claude");
 
     const parsed = extractJson((textBlock as any).text);
-
-    if (!parsed.boards) {
-      throw new Error("Response JSON missing 'boards' object");
-    }
-
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    if (!parsed.boards) throw new Error("Response JSON missing 'boards' object");
 
     const today = new Date().toISOString().slice(0, 10);
-    const boardNames: (keyof typeof parsed.boards)[] = ["main", "far_out", "canada_bc"];
+    const boardNames: (keyof typeof parsed.boards)[] = ["main", "far_out", "canada_bc", "human_needs"];
 
     const rows: any[] = [];
     for (const boardName of boardNames) {
@@ -110,26 +110,37 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           why_others_missed_it: op.why_others_missed_it,
           confidence: op.confidence,
           is_top_recommendation: op.is_top_recommendation === true,
+          who_this_is_for: op.who_this_is_for || null,
+          research_grounding: op.research_grounding || null,
           status: "new",
           raw_report_markdown: parsed.raw_report_markdown,
         });
       }
     }
 
-    if (rows.length === 0) {
-      throw new Error("No opportunities returned across any board");
+    if (rows.length > 0) {
+      const { error } = await supabase.from("opportunities").insert(rows);
+      if (error) throw new Error("Supabase insert error: " + error.message);
     }
 
-    const { error } = await supabase.from("opportunities").insert(rows);
-
-    if (error) {
-      console.error("Supabase insert error:", error);
-      return res.status(500).json({ success: false, error: error.message });
+    if (parsed.watchlist_flags && seedIdeas) {
+      for (const flag of parsed.watchlist_flags) {
+        const matched = seedIdeas.find((s) => s.title === flag.seed_idea_title);
+        if (matched) {
+          await supabase.from("seed_idea_flags").insert({
+            report_date: today,
+            seed_idea_id: matched.id,
+            note: flag.note,
+          });
+          await supabase.from("seed_ideas").update({ last_flagged_date: today }).eq("id", matched.id);
+        }
+      }
     }
 
     return res.status(200).json({
       success: true,
       inserted: rows.length,
+      watchlist_flags: parsed.watchlist_flags?.length || 0,
       today_signal: parsed.today_signal,
     });
   } catch (err: any) {

@@ -12,6 +12,7 @@
   h3.board-title { font-size: 1.3rem; font-weight: 800; margin: 2rem 0 0.75rem; padding-bottom: 0.4rem; border-bottom: 3px solid #111827; }
   h3.board-title.far-out { border-bottom-color: #7c3aed; color: #5b21b6; }
   h3.board-title.canada-bc { border-bottom-color: #dc2626; color: #991b1b; }
+  h3.board-title.human-needs { border-bottom-color: #0891b2; color: #0e7490; }
   .board-subtitle { font-size: 0.85rem; color: #6b7280; margin-bottom: 1rem; margin-top: -0.5rem; }
   .card { border: 1px solid #e5e7eb; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; }
   .card.top { border: 2px solid #111827; }
@@ -19,6 +20,8 @@
   .label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7280; margin-bottom: 0.35rem; }
   .summary-box { font-size: 0.95rem; color: #111827; background: #eef2ff; border-left: 4px solid #4f46e5; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; }
   .fit-box { font-size: 0.95rem; color: #111827; background: #f0fdf4; border-left: 4px solid #16a34a; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; }
+  .who-box { font-size: 0.95rem; color: #111827; background: #ecfeff; border-left: 4px solid #0891b2; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; }
+  .research-box { font-size: 0.95rem; color: #111827; background: #fdf4ff; border-left: 4px solid #a21caf; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem; }
   .card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
   .card-head h4 { font-size: 1.15rem; font-weight: 700; margin: 0; }
   .confidence { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; white-space: nowrap; }
@@ -34,12 +37,18 @@
   .btn-promote.done { background: #111827; color: white; }
   .btn-discard { border: 1px solid #d1d5db; background: white; color: #6b7280; }
   .empty { color: #6b7280; font-style: italic; }
-
   .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; position: sticky; top: 0; background: white; padding: 0.5rem 0; z-index: 10; }
   .tab-btn { font-size: 0.85rem; font-weight: 600; padding: 0.5rem 1rem; border-radius: 999px; border: 2px solid #e5e7eb; background: white; color: #6b7280; cursor: pointer; }
   .tab-btn.active { border-color: #111827; background: #111827; color: white; }
   .tab-btn.active.far-out { border-color: #7c3aed; background: #7c3aed; }
   .tab-btn.active.canada-bc { border-color: #dc2626; background: #dc2626; }
+  .tab-btn.active.human-needs { border-color: #0891b2; background: #0891b2; }
+  .tab-btn.active.watchlist { border-color: #a21caf; background: #a21caf; }
+  .watchlist-form { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 2rem; padding: 1rem; border: 1px dashed #d1d5db; border-radius: 10px; }
+  .watchlist-form input, .watchlist-form textarea { padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 0.9rem; }
+  .watchlist-idea { border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
+  .watchlist-idea h4 { margin: 0 0 0.5rem; }
+  .watchlist-flag { font-size: 0.85rem; background: #fdf4ff; border-left: 3px solid #a21caf; padding: 0.5rem 0.75rem; border-radius: 4px; margin-top: 0.5rem; }
 </style>
 </head>
 <body>
@@ -49,18 +58,22 @@
     <button class="tab-btn" data-filter="main" onclick="setFilter('main')">Main</button>
     <button class="tab-btn" data-filter="far_out" onclick="setFilter('far_out')">Far-Out</button>
     <button class="tab-btn" data-filter="canada_bc" onclick="setFilter('canada_bc')">Canada/BC</button>
+    <button class="tab-btn" data-filter="human_needs" onclick="setFilter('human_needs')">Human Needs</button>
+    <button class="tab-btn" data-filter="watchlist" onclick="setFilter('watchlist')">Watchlist</button>
   </div>
   <div id="feed"><p class="empty">Loading...</p></div>
 
 <script>
 let currentFilter = 'all';
 let allItems = [];
+let watchlistIdeas = [];
 
 const confidenceClass = { high: 'high', medium: 'medium', speculative: 'speculative' };
 const boardMeta = {
   main: { title: 'Main Board', subtitle: 'Grounded, buildable-now opportunities', cssClass: '' },
-  far_out: { title: 'Far-Out Board', subtitle: 'Bolder, visionary ideas — still real, still viable, just bigger bets', cssClass: 'far-out' },
-  canada_bc: { title: 'Canada / BC Board', subtitle: 'Opportunities rooted in Canadian or BC-specific conditions', cssClass: 'canada-bc' }
+  far_out: { title: 'Far-Out Board', subtitle: 'Bolder, visionary ideas — still real, still viable', cssClass: 'far-out' },
+  canada_bc: { title: 'Canada / BC Board', subtitle: 'Rooted in Canadian or BC-specific conditions', cssClass: 'canada-bc' },
+  human_needs: { title: 'Human Needs Board', subtitle: 'Starts from one specific person\'s real struggle, researched deeply', cssClass: 'human-needs' }
 };
 
 function setFilter(filter) {
@@ -68,28 +81,37 @@ function setFilter(filter) {
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     const isActive = btn.dataset.filter === filter;
     btn.classList.toggle('active', isActive);
-    btn.classList.remove('far-out', 'canada-bc');
-    if (isActive && filter === 'far_out') btn.classList.add('far-out');
-    if (isActive && filter === 'canada_bc') btn.classList.add('canada-bc');
+    btn.classList.remove('far-out', 'canada-bc', 'human-needs', 'watchlist');
+    if (isActive && filter !== 'all' && filter !== 'main') btn.classList.add(filter.replace('_', '-'));
   });
   render();
 }
 
 async function loadFeed() {
-  const feedEl = document.getElementById('feed');
   try {
-    const res = await fetch('/api/opportunities/list');
-    const data = await res.json();
-    allItems = data.opportunities || [];
+    const [feedRes, watchlistRes] = await Promise.all([
+      fetch('/api/opportunities/list'),
+      fetch('/api/seed-ideas/list')
+    ]);
+    const feedData = await feedRes.json();
+    const watchlistData = await watchlistRes.json();
+    allItems = feedData.opportunities || [];
+    watchlistIdeas = watchlistData.ideas || [];
     render();
   } catch (err) {
-    feedEl.innerHTML = '<p class="empty">Failed to load feed. Check back later.</p>';
+    document.getElementById('feed').innerHTML = '<p class="empty">Failed to load feed. Check back later.</p>';
     console.error(err);
   }
 }
 
 function render() {
   const feedEl = document.getElementById('feed');
+
+  if (currentFilter === 'watchlist') {
+    feedEl.innerHTML = watchlistSectionHtml();
+    return;
+  }
+
   if (allItems.length === 0) {
     feedEl.innerHTML = '<p class="empty">No opportunities yet — the first daily run hasn\'t landed.</p>';
     return;
@@ -100,11 +122,11 @@ function render() {
     (grouped[op.report_date] = grouped[op.report_date] || []).push(op);
   });
   const dates = Object.keys(grouped).sort().reverse();
-  const boardsToShow = currentFilter === 'all' ? ['main', 'far_out', 'canada_bc'] : [currentFilter];
+  const boardsToShow = currentFilter === 'all' ? ['main', 'far_out', 'canada_bc', 'human_needs'] : [currentFilter];
 
   feedEl.innerHTML = dates.map((date) => {
     const dayItems = grouped[date];
-    const byBoard = { main: [], far_out: [], canada_bc: [] };
+    const byBoard = { main: [], far_out: [], canada_bc: [], human_needs: [] };
     dayItems.forEach((op) => {
       const cat = op.category || 'main';
       (byBoard[cat] = byBoard[cat] || []).push(op);
@@ -114,27 +136,56 @@ function render() {
     const sections = boardsToShow.map((boardKey) => boardSectionHtml(boardKey, byBoard[boardKey])).join('');
     if (!sections.trim()) return '';
 
-    return `
-      <h2 class="date">${date}</h2>
-      ${sections}
-    `;
+    return `<h2 class="date">${date}</h2>${sections}`;
   }).join('');
+}
+
+function watchlistSectionHtml() {
+  const formHtml = `
+    <div class="watchlist-form">
+      <div class="label">Submit a new idea</div>
+      <input type="text" id="new-idea-title" placeholder="Idea title" />
+      <textarea id="new-idea-desc" placeholder="Description (optional)" rows="3"></textarea>
+      <button class="btn-promote" onclick="submitIdea()">Add to Watchlist</button>
+    </div>
+  `;
+
+  if (watchlistIdeas.length === 0) {
+    return formHtml + '<p class="empty">No ideas on your watchlist yet.</p>';
+  }
+
+  const ideasHtml = watchlistIdeas.map((idea) => `
+    <div class="watchlist-idea">
+      <h4>${escapeHtml(idea.title)}</h4>
+      ${idea.description ? `<p>${escapeHtml(idea.description)}</p>` : ''}
+      ${idea.flags.length === 0
+        ? '<p class="empty">No flags yet — the engine is watching for relevant developments.</p>'
+        : idea.flags.map((f) => `<div class="watchlist-flag"><strong>${f.report_date}:</strong> ${escapeHtml(f.note)}</div>`).join('')}
+    </div>
+  `).join('');
+
+  return formHtml + ideasHtml;
+}
+
+async function submitIdea() {
+  const title = document.getElementById('new-idea-title').value.trim();
+  const description = document.getElementById('new-idea-desc').value.trim();
+  if (!title) return;
+  await fetch('/api/seed-ideas/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, description })
+  });
+  await loadFeed();
+  setFilter('watchlist');
 }
 
 function boardSectionHtml(boardKey, items) {
   const meta = boardMeta[boardKey];
   if (!items || items.length === 0) {
-    return `
-      <h3 class="board-title ${meta.cssClass}">${meta.title}</h3>
-      <p class="board-subtitle">${meta.subtitle}</p>
-      <p class="empty">No opportunities cleared the bar for this board today.</p>
-    `;
+    return `<h3 class="board-title ${meta.cssClass}">${meta.title}</h3><p class="board-subtitle">${meta.subtitle}</p><p class="empty">No opportunities cleared the bar for this board today.</p>`;
   }
-  return `
-    <h3 class="board-title ${meta.cssClass}">${meta.title}</h3>
-    <p class="board-subtitle">${meta.subtitle}</p>
-    ${items.map(cardHtml).join('')}
-  `;
+  return `<h3 class="board-title ${meta.cssClass}">${meta.title}</h3><p class="board-subtitle">${meta.subtitle}</p>${items.map(cardHtml).join('')}`;
 }
 
 function cardHtml(op) {
@@ -143,14 +194,10 @@ function cardHtml(op) {
   const promoted = op.status === 'promoted';
   return `
     <article class="card ${topClass} ${discardedClass}" data-id="${op.id}">
-      ${op.key_summary ? `
-        <div class="label">Plain-Language Summary</div>
-        <p class="summary-box">${escapeHtml(op.key_summary)}</p>
-      ` : ''}
-      ${op.sean_fit ? `
-        <div class="label">For Sean</div>
-        <p class="fit-box">${escapeHtml(op.sean_fit)}</p>
-      ` : ''}
+      ${op.who_this_is_for ? `<div class="label">Who This Is For</div><p class="who-box">${escapeHtml(op.who_this_is_for)}</p>` : ''}
+      ${op.key_summary ? `<div class="label">Plain-Language Summary</div><p class="summary-box">${escapeHtml(op.key_summary)}</p>` : ''}
+      ${op.research_grounding ? `<div class="label">Research Grounding</div><p class="research-box">${escapeHtml(op.research_grounding)}</p>` : ''}
+      ${op.sean_fit ? `<div class="label">For Sean</div><p class="fit-box">${escapeHtml(op.sean_fit)}</p>` : ''}
       <div class="card-head">
         <h4>${op.is_top_recommendation ? '⭐ ' : ''}${escapeHtml(op.title)}</h4>
         <span class="confidence ${confidenceClass[op.confidence] || ''}">${op.confidence}</span>
