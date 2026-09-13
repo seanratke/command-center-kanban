@@ -384,6 +384,8 @@ function rowToItem(row) {
     overrideUsed: row.override_used || false,
     participationPath: row.participation_path || null,
     buildRecommendation: row.build_recommendation || null,
+    validationFindings: row.validation_findings || null,
+    validationVerdict: row.validation_verdict || null,
   };
 }
 
@@ -664,6 +666,56 @@ function renderBuildRecommendation(item) {
   );
 }
 
+async function submitFindings(item, wrapEl) {
+  const textarea = wrapEl.querySelector('.findings-input');
+  const findings = textarea.value.trim();
+  if (!findings) {
+    let errEl = wrapEl.querySelector('.findings-error');
+    if (!errEl) {
+      errEl = el('p', { class: 'findings-error', text: 'Enter what you found first.', style: 'color:var(--text-danger);font-size:12px;margin:4px 0;' });
+      wrapEl.appendChild(errEl);
+    }
+    return;
+  }
+  const btn = event ? event.target : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Reading your findings...'; }
+  await fetch('/api/validating-assistant', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: item.id, findings })
+  });
+  await loadItems();
+  render();
+}
+
+function renderValidation(item) {
+  if (item.stage !== 'lab') return null;
+  const wrap = el('div', { class: 'validation-section', style: 'margin:10px 0;padding:10px;border:1px dashed var(--border);border-radius:8px;font-size:13px;' });
+
+  if (item.validationVerdict) {
+    const v = item.validationVerdict;
+    const colorVar = v.recommendation === 'advance' ? 'var(--text-success)' : v.recommendation === 'kill' ? 'var(--text-danger)' : 'var(--amber)';
+    wrap.appendChild(el('p', { text: 'Verdict: ' + v.recommendation, style: 'font-weight:600;margin:0 0 6px;color:' + colorVar + ';' }));
+    wrap.appendChild(el('p', { text: v.reasoning || '', style: 'margin:0 0 6px;' }));
+    if (v.pivot_suggestion) wrap.appendChild(el('p', { text: 'Pivot to: ' + v.pivot_suggestion, style: 'margin:0;font-style:italic;' }));
+    return wrap;
+  }
+
+  wrap.appendChild(el('p', { text: 'Done the Lab work? Log what you found:', style: 'font-weight:600;margin:0 0 8px;' }));
+  wrap.appendChild(el('textarea', {
+    class: 'findings-input',
+    rows: '4',
+    placeholder: 'What did you actually find out there...',
+    onclick: (e) => e.stopPropagation(),
+    style: 'width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface-1);color:var(--text-primary);font-size:13px;font-family:inherit;'
+  }));
+  wrap.appendChild(el('button', {
+    text: 'Get a verdict',
+    onclick: (e) => { e.stopPropagation(); submitFindings(item, wrap); }
+  }));
+  return wrap;
+}
+
 function renderCard(item, idx) {
 
   const stageIdx = STAGES.findIndex(s => s.key === item.stage);
@@ -698,6 +750,7 @@ function renderCard(item, idx) {
     renderReviewSection(item),
     renderParticipationPath(item),
     renderBuildRecommendation(item),
+    renderValidation(item),
     foot,
     moveRow,
     el('div', { class: 'card-days', text: days === 0 ? 'touched today' : `sat for ${days} day${days === 1 ? '' : 's'}` })
