@@ -19,6 +19,8 @@ If a concept leans on a genuine grey area (aggressive but legal timing, an enfor
 NOMINATING NEW FIELDS
 If, while working through this week's material, you notice a pattern that really belongs to a field or way of thinking not currently in the pool -- something you personally cannot do justice to -- nominate it. Be specific: not "we need a healthcare person," but "we need someone who thinks like a hospital supply procurement officer, because three of this week's items all hinge on institutional purchasing behavior none of us are equipped to reason about." Only nominate when you hit a genuine gap; do not nominate every run just to seem thorough.
 
+JSON SAFETY -- this is parsed programmatically. Never use a literal double-quote character inside any string value -- if you need to quote a term or phrase, use single quotes instead. Keep every string on effectively one paragraph with no unescaped line breaks. Double-check your output is valid, parseable JSON before finishing.
+
 OUTPUT -- return ONLY valid JSON, no markdown fences, no commentary before or after:
 {
   "ideas": [
