@@ -8,6 +8,25 @@ function loadPrompt(): string {
   return fs.readFileSync(path.join(process.cwd(), "lib", "inbox-review-panel-prompt.md"), "utf-8");
 }
 
+function loadLabPrompt(): string {
+  return fs.readFileSync(path.join(process.cwd(), "lib", "lab-assistant-prompt.md"), "utf-8");
+}
+
+async function runLabAssistant(anthropic: Anthropic, item: any, participationPath: any) {
+  const labPrompt = loadLabPrompt();
+  const userContent = `Title: ${item.title}\nNote: ${item.note || "(none)"}\n${participationPath ? `\nPARTICIPATION PATH FROM REVIEW PANEL (this idea was judged too big to build solo):\n${JSON.stringify(participationPath)}` : "\nNo participation path was flagged -- this idea was judged realistically solo/small-team buildable."}`;
+
+  const message = await anthropic.messages.create({
+    model: "claude-opus-5",
+    max_tokens: 4000,
+    system: labPrompt,
+    messages: [{ role: "user", content: userContent }],
+  });
+  const textBlock = message.content.find((b: any) => b.type === "text");
+  if (!textBlock) throw new Error("No text content returned from Claude for lab assistant");
+  return extractJson((textBlock as any).text);
+}
+
 function extractJson(text: string): any {
   const cleaned = text.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "");
   return JSON.parse(cleaned);
@@ -51,6 +70,11 @@ export async function runReviewAction(
       if (result.status === "approved") {
         update.stage = "lab";
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
+        try {
+          update.build_recommendation = await runLabAssistant(anthropic, item, result.participation_path || null);
+        } catch (labErr) {
+          console.error("Lab assistant failed:", labErr);
+        }
       }
       if (result.participation_path) update.participation_path = result.participation_path;
 
@@ -74,6 +98,11 @@ export async function runReviewAction(
       if (result.status === "approved") {
         update.stage = "lab";
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
+        try {
+          update.build_recommendation = await runLabAssistant(anthropic, item, result.participation_path || null);
+        } catch (labErr) {
+          console.error("Lab assistant failed:", labErr);
+        }
       }
       if (result.participation_path) update.participation_path = result.participation_path;
 
@@ -95,6 +124,12 @@ export async function runReviewAction(
         note: (item.note || "") + `\n\nOverride reasoning: ${reasoning}\n\nLab focus: ${result.lab_focus || ""}`,
         reviewed_at: new Date().toISOString(),
       };
+
+      try {
+        update.build_recommendation = await runLabAssistant(anthropic, item, item.participation_path || null);
+      } catch (labErr) {
+        console.error("Lab assistant failed:", labErr);
+      }
 
       const { error: updateError } = await supabase.from("items").update(update).eq("id", id);
       if (updateError) return { success: false, error: updateError.message, status: 500 };
