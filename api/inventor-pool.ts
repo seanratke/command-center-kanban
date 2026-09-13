@@ -1,4 +1,5 @@
 // api/inventor-pool.ts
+export const maxDuration = 300;
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
