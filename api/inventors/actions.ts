@@ -129,6 +129,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true });
     }
 
+    if (action === "create_inventor") {
+      if (!name || !domain || !persona) return res.status(400).json({ error: "name, domain, and persona are required" });
+      const { error: createError } = await supabase.from("inventors").insert({ name, domain, persona, status: "active" });
+      if (createError) throw new Error(createError.message);
+      return res.status(200).json({ success: true });
+    }
+
+    if (action === "retire_inventor") {
+      const { error: retireError } = await supabase.from("inventors").update({ status: "retired" }).eq("id", id);
+      if (retireError) throw new Error(retireError.message);
+      return res.status(200).json({ success: true });
+    }
+
     return res.status(400).json({ error: "unknown action" });
   } catch (err: any) {
     console.error("Inventor action error:", err);

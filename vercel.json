@@ -25,6 +25,10 @@
     {
       "source": "/inventors",
       "destination": "/inventors.html"
+    },
+    {
+      "source": "/roster",
+      "destination": "/roster.html"
     }
   ],
   "functions": {
