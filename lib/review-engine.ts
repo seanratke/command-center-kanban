@@ -72,8 +72,9 @@ export async function runReviewAction(
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
         try {
           update.build_recommendation = await runLabAssistant(anthropic, item, result.participation_path || null);
-        } catch (labErr) {
+        } catch (labErr: any) {
           console.error("Lab assistant failed:", labErr);
+          update.build_recommendation = { debug_error: labErr.message ?? String(labErr) };
         }
       }
       if (result.participation_path) update.participation_path = result.participation_path;
@@ -100,8 +101,9 @@ export async function runReviewAction(
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
         try {
           update.build_recommendation = await runLabAssistant(anthropic, item, result.participation_path || null);
-        } catch (labErr) {
+        } catch (labErr: any) {
           console.error("Lab assistant failed:", labErr);
+          update.build_recommendation = { debug_error: labErr.message ?? String(labErr) };
         }
       }
       if (result.participation_path) update.participation_path = result.participation_path;
@@ -127,8 +129,9 @@ export async function runReviewAction(
 
       try {
         update.build_recommendation = await runLabAssistant(anthropic, item, item.participation_path || null);
-      } catch (labErr) {
+      } catch (labErr: any) {
         console.error("Lab assistant failed:", labErr);
+        update.build_recommendation = { debug_error: labErr.message ?? String(labErr) };
       }
 
       const { error: updateError } = await supabase.from("items").update(update).eq("id", id);
