@@ -260,16 +260,27 @@ async function spark(id) {
   await loadFeed();
 }
 
+async function promoteSpark(id, index) {
+  const btn = event ? event.target : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Sent ✓'; }
+  await fetch('/api/spark-promote', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, index })
+  });
+}
+
 function sparkHtml(op) {
   if (!op.spark_ideas || op.spark_ideas.length === 0) return '';
   return `
     <div style="margin-top:1rem;padding:1rem;border:1px dashed #a21caf;border-radius:10px;">
       <div class="label" style="margin-bottom:0.75rem;">Spark -- divergent directions</div>
-      ${op.spark_ideas.map(s => `
+      ${op.spark_ideas.map((s, i) => `
         <div style="margin-bottom:1rem;">
           <p style="font-weight:700;margin:0 0 0.3rem;">${escapeHtml(s.title)}</p>
           <p style="margin:0 0 0.3rem;font-size:0.9rem;">${escapeHtml(s.angle)}</p>
-          <p style="margin:0;font-size:0.85rem;color:#a21caf;font-style:italic;">${escapeHtml(s.why_different)}</p>
+          <p style="margin:0 0 0.5rem;font-size:0.85rem;color:#a21caf;font-style:italic;">${escapeHtml(s.why_different)}</p>
+          <button class="btn-discard" onclick="promoteSpark('${op.id}', ${i})">Send to Inbox</button>
         </div>
       `).join('')}
     </div>
