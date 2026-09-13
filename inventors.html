@@ -81,12 +81,17 @@ function render() {
 }
 
 function synthesisHtml(s) {
+  const isOverlap = s.idea_type === 'overlap';
+  const borderColor = isOverlap ? '#d97706' : '#0891b2';
+  const bg = isOverlap ? '#fffbeb' : '#ecfeff';
+  const label = isOverlap ? 'OVERLAP -- two systems found the same thing' : 'COMBINATION -- new idea from merging sources';
   return `
-    <div class="nomination-card" style="border-color:#0891b2;background:#ecfeff;">
+    <div class="nomination-card" style="border-color:${borderColor};background:${bg};">
+      <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;color:${borderColor};margin:0 0 6px;">${label}</p>
       <h3>${escapeHtml(s.title)}</h3>
       <p>${escapeHtml(s.concept)}</p>
       <p style="font-size:0.85rem;color:#374151;margin:0.5rem 0;">${escapeHtml(s.mechanism)}</p>
-      <p style="font-size:0.8rem;color:#0891b2;font-style:italic;">Combines: ${escapeHtml(s.source_items)}</p>
+      <p style="font-size:0.8rem;color:${borderColor};font-style:italic;">${isOverlap ? 'Overlapping sources' : 'Combines'}: ${escapeHtml(s.source_items)}</p>
       <div class="nomination-actions">
         <button class="btn-promote" onclick="promoteSynthesis('${s.id}')">Promote to Inbox</button>
         <button class="btn-discard" onclick="discardSynthesis('${s.id}')">Discard</button>

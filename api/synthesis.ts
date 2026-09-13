@@ -71,6 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         concept: idea.concept,
         mechanism: idea.mechanism,
         source_items: idea.source_items,
+        idea_type: idea.idea_type === 'overlap' ? 'overlap' : 'combination',
       });
       saved++;
     }
