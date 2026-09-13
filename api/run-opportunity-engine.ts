@@ -44,6 +44,10 @@ function extractJson(text: string): EngineResponse {
   return JSON.parse(cleaned);
 }
 
+export const config = {
+  maxDuration: 800,
+};
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const authHeader = req.headers.authorization;
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {

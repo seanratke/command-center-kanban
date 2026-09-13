@@ -13,7 +13,7 @@
   ],
   "functions": {
     "api/run-opportunity-engine.ts": {
-      "maxDuration": 300
+      "maxDuration": 800
     }
   }
 }
