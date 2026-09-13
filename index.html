@@ -543,13 +543,22 @@ async function runReview(item) {
   render();
 }
 
-async function submitAnswers(item) {
-  const qs = item.reviewQuestions || [];
+async function submitAnswers(item, wrapEl) {
+  const inputs = wrapEl.querySelectorAll('.review-answer-input');
   const answers = {};
-  for (let i = 0; i < qs.length; i++) {
-    const a = window.prompt(qs[i].question + '\n\n(Approve leans: ' + qs[i].if_yes + ' / Reject leans: ' + qs[i].if_no + ')');
-    if (a === null) return;
-    answers[i] = a;
+  let allFilled = true;
+  inputs.forEach((inp, i) => {
+    const v = inp.value.trim();
+    if (!v) allFilled = false;
+    answers[i] = v;
+  });
+  if (!allFilled) {
+    let errEl = wrapEl.querySelector('.review-answer-error');
+    if (!errEl) {
+      errEl = el('p', { class: 'review-answer-error', text: 'Please answer every question first.', style: 'color:var(--text-danger);font-size:12px;margin:4px 0;' });
+      wrapEl.appendChild(errEl);
+    }
+    return;
   }
   await callReviewPanel(item.id, 'answer', { answers });
   await loadItems();
@@ -577,13 +586,20 @@ function renderReviewSection(item) {
   }
 
   if (item.reviewStatus === 'needs_input') {
-    wrap.appendChild(el('p', { text: 'Panel has questions for you:', style: 'font-weight:600;margin:0 0 6px;' }));
+    wrap.appendChild(el('p', { text: 'Panel has questions for you:', style: 'font-weight:600;margin:0 0 8px;' }));
     (item.reviewQuestions || []).forEach(q => {
-      wrap.appendChild(el('p', { text: '- ' + q.question, style: 'margin:0 0 4px;' }));
+      wrap.appendChild(el('p', { text: q.question, style: 'margin:0 0 4px;font-weight:500;' }));
+      wrap.appendChild(el('input', {
+        class: 'review-answer-input',
+        type: 'text',
+        placeholder: 'Your answer...',
+        onclick: (e) => e.stopPropagation(),
+        style: 'width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:10px;border:1px solid var(--border);border-radius:6px;background:var(--surface-1);color:var(--text-primary);font-size:13px;'
+      }));
     });
     wrap.appendChild(el('button', {
-      text: 'Answer questions',
-      onclick: (e) => { e.stopPropagation(); submitAnswers(item); }
+      text: 'Submit answers',
+      onclick: (e) => { e.stopPropagation(); submitAnswers(item, wrap); }
     }));
     return wrap;
   }
