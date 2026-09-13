@@ -51,5 +51,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ success: false, error: updateError.message });
   }
 
+  try {
+    const { data: newItem } = await supabase
+      .from("items")
+      .select("id")
+      .eq("title", opportunity.title)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single();
+
+    if (newItem) {
+      fetch("https://command-center-ashen-gamma.vercel.app/api/review-panel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: newItem.id, action: "review" }),
+      }).catch((e) => console.error("Auto-review trigger failed:", e));
+    }
+  } catch (e) {
+    console.error("Auto-review lookup failed:", e);
+  }
+
   return res.status(200).json({ success: true });
 }

@@ -419,6 +419,15 @@ async function addItem(title) {
   if (error) { console.error('insert failed', error); return; }
   state.items.unshift(rowToItem(data));
   render();
+
+  fetch('/api/review-panel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: data.id, action: 'review' })
+  }).then(async () => {
+    await loadItems();
+    render();
+  }).catch(e => console.error('Auto-review trigger failed:', e));
 }
 
 function touchItem(item) { item.updatedAt = Date.now(); }
