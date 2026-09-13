@@ -1,4 +1,5 @@
 // api/spark-promote.ts
+export const maxDuration = 120;
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 
@@ -32,6 +33,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     updated_at: now,
   });
   if (insertError) return res.status(500).json({ success: false, error: insertError.message });
+
+  const { data: newItem } = await supabase.from("items").select("id").eq("title", spark.title).order("created_at", { ascending: false }).limit(1).single();
+  if (newItem) {
+    await fetch("https://command-center-ashen-gamma.vercel.app/api/review-panel", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: newItem.id, action: "review" }),
+    }).catch((e) => console.error("Auto-review trigger failed:", e));
+  }
 
   return res.status(200).json({ success: true });
 }
