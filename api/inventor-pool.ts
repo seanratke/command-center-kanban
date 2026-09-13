@@ -69,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .select("*")
       .eq("status", "active")
       .order("last_run_at", { ascending: true, nullsFirst: true })
-      .limit(4);
+      .limit(2);
 
     if (!activeInventors || activeInventors.length === 0) {
       return res.status(200).json({ success: true, message: "No active inventors found", ideasGenerated: 0 });
