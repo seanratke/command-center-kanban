@@ -29,6 +29,10 @@
     {
       "source": "/roster",
       "destination": "/roster.html"
+    },
+    {
+      "source": "/needs",
+      "destination": "/needs.html"
     }
   ],
   "functions": {
