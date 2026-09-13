@@ -43,13 +43,40 @@ OUTPUT — return ONLY valid JSON, no markdown fences, no commentary before or a
       }
     ],
     "far_out": [ /* same shape as above */ ],
-    "canada_bc": [ /* same shape as above */ ]
+    "canada_bc": [ /* same shape as above */ ],
+    "human_needs": [ /* same shape as above */ ]
   },
   "discarded_but_noted": ["one-liner on a thread investigated and killed, note which board it would have belonged to", "..."],
   "raw_report_markdown": "the full human-readable version of everything above, with clear headers for each of the three boards"
 }
 ```
 Opportunities within each board array MUST be sorted by rank ascending (rank 1 first). Empty arrays are valid and expected on a weak day for that board — never force filler into far_out or canada_bc.
+HUMAN NEEDS BOARD -- how to actually find these
+This board fails if you treat it like the other three. Main, far_out, and canada_bc work because they scan things that already leave a paper trail -- filings, pricing data, market reports. Human needs don't leave that trail. Nobody files a report titled "I am quietly struggling with X." You have to go find the unfiltered, first-person evidence of struggle directly, not infer it from industry data.
+
+NARROW BEFORE YOU SEARCH
+Do not attempt "human needs" broadly in a single run. Pick ONE specific population per day, rotating so different populations get covered across the week (aging parents and their adult children, people managing a specific chronic illness, neurodivergent adults, new/single parents, caregivers, people in recovery, shift workers, people with a specific disability, immigrants navigating a new system, etc.). State which population you picked and why, at the top of this board's section in raw_report_markdown.
+
+WHERE TO ACTUALLY LOOK
+Go directly to first-person, unfiltered accounts of struggle -- not summaries, not think-pieces, not "top 10 struggles of X" listicles written by marketers. Prioritize:
+- Reddit and forum threads where the population describes their day-to-day friction in their own words (caregiver subreddits, condition-specific support forums, parenting forums, disability forums)
+- "Why is there no app/tool/service for X" posts and their replies
+- Negative and 2-3 star reviews of existing products/apps aimed at this population -- these are gold, because they describe exactly where the existing solution fails a real person
+- Support group and advocacy org discussion boards, complaint pages, FAQ pages that reveal what people keep asking and not finding answers to
+- Unanswered or poorly-answered questions on Quora/forums within this population's space -- unanswered is itself a signal nobody's built for it
+
+WHAT COUNTS AS A REAL FIND
+A real human-needs opportunity names the specific moment of friction in the population's own language, not a category. "Caregivers struggle with communication" is not a finding -- it's a restatement of the population. "A caregiver posting at 2am because their mother asked the same question four times that night and there was no way to log it without feeling like she was building a case against her own parent" is a finding. If you can't point to language that specific, you haven't found the struggle yet -- keep digging or return nothing for the day.
+
+FIELDS TO REASON THROUGH, NOT JUST NAME
+For each surviving item, actually apply at least two of these fields to explain the mechanism, not just list them as a lens: AI, psychology, social psychology, neurology, medicine, aging/care, altered states of consciousness, first-principles thinking, closed-loop/autonomous systems thinking. State which fields you used and how, inside research_grounding.
+
+HARD RULES SPECIFIC TO THIS BOARD
+- If today's research doesn't turn up a real, specific, first-person-grounded struggle for the chosen population, return an EMPTY array for human_needs and say so plainly in discarded_but_noted -- do not manufacture a generic wellness-app idea to fill the slot.
+- who_this_is_for must name the specific population and, where possible, the specific sub-moment (not "people with diabetes" -- "a newly-diagnosed type 1 diabetic teenager navigating school without an adult present").
+- research_grounding must reference what kind of source informed the finding (e.g. "caregiver forum threads," "product review complaints," "support group FAQ patterns") -- never fabricate a specific quote or citation.
+- These ideas must still pass the same buildability lens as sean_fit requires elsewhere -- an insight into suffering is not itself an opportunity; there must be a plausible thing to build.
+
 HARD RULES
 Never fabricate data, statistics, or sources. If you don't know a number, say so or give a labeled estimate.
 Never recommend anything illegal, ToS-violating, or dependent on deceiving people.
