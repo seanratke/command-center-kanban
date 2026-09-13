@@ -2,6 +2,8 @@
 export const maxDuration = 120;
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
+import Anthropic from "@anthropic-ai/sdk";
+import { runReviewAction } from "../../../lib/review-engine";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const { id } = req.query;
@@ -62,11 +64,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (newItem) {
-      await fetch("https://command-center-ashen-gamma.vercel.app/api/review-panel", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: newItem.id, action: "review" }),
-      }).catch((e) => console.error("Auto-review trigger failed:", e));
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+      const outcome = await runReviewAction(supabase, anthropic, { id: newItem.id, action: "review" });
+      if (!outcome.success) console.error("Auto-review failed:", outcome.error);
     }
   } catch (e) {
     console.error("Auto-review lookup failed:", e);

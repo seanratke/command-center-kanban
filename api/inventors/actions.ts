@@ -3,6 +3,7 @@ export const maxDuration = 120;
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
+import { runReviewAction } from "../../lib/review-engine";
 
 function extractJson(text: string): any {
   const cleaned = text.trim().replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "");
@@ -15,6 +16,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!action || !id) return res.status(400).json({ error: "action and id are required" });
 
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
   try {
     if (action === "promote") {
@@ -42,11 +44,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const { data: newItem1 } = await supabase.from("items").select("id").eq("title", idea.title).order("created_at", { ascending: false }).limit(1).single();
       if (newItem1) {
-        await fetch("https://command-center-ashen-gamma.vercel.app/api/review-panel", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: newItem1.id, action: "review" }),
-        }).catch((e) => console.error("Auto-review trigger failed:", e));
+        const outcome1 = await runReviewAction(supabase, anthropic, { id: newItem1.id, action: "review" });
+        if (!outcome1.success) console.error("Auto-review failed:", outcome1.error);
       }
 
       await supabase.from("inventor_ideas").update({ status: "promoted" }).eq("id", id);
@@ -83,11 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
       const { data: newItem2 } = await supabase.from("items").select("id").eq("title", idea.title).order("created_at", { ascending: false }).limit(1).single();
       if (newItem2) {
-        await fetch("https://command-center-ashen-gamma.vercel.app/api/review-panel", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: newItem2.id, action: "review" }),
-        }).catch((e) => console.error("Auto-review trigger failed:", e));
+        const outcome2 = await runReviewAction(supabase, anthropic, { id: newItem2.id, action: "review" });
+        if (!outcome2.success) console.error("Auto-review failed:", outcome2.error);
       }
 
       await supabase.from("synthesis_ideas").update({ status: "promoted" }).eq("id", id);
