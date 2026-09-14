@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projects</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --paper:#F6F5F1;
+    --ink:#25241F;
+    --ink-soft:#6E6C61;
+    --line:#DEDBD1;
+    --sage:#3F5B4C;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'IBM Plex Sans', -apple-system, sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:640px; margin:0 auto; padding:40px 20px 80px; }
+  header{ margin-bottom:36px; }
+  header h1{ font-family:'Fraunces', serif; font-weight:500; font-size:32px; margin:0 0 8px; letter-spacing:-0.01em; }
+  header p{ margin:0; color:var(--ink-soft); font-size:15px; line-height:1.5; max-width:46ch; }
+  .status-line{ font-size:12.5px; color:var(--ink-soft); margin-top:14px; }
+  .project{ padding:22px 0; border-top:1px solid var(--line); }
+  .project:last-child{ border-bottom:1px solid var(--line); }
+  .project-head{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:6px; }
+  .project-name{ font-family:'Fraunces', serif; font-weight:500; font-size:19px; }
+  .project-status{ color:var(--ink-soft); font-size:14.5px; line-height:1.5; margin:0 0 14px; max-width:48ch; }
+  .rail{ display:flex; align-items:center; margin-bottom:16px; }
+  .rail-step{ display:flex; align-items:center; flex:1; }
+  .rail-dot{ width:9px; height:9px; border-radius:50%; background:var(--line); flex:none; position:relative; }
+  .rail-dot.done{ background:var(--sage); }
+  .rail-dot.current{ width:13px; height:13px; background:var(--paper); border:2.5px solid var(--sage); }
+  .rail-track{ flex:1; height:1px; background:var(--line); margin:0 4px; }
+  .rail-track.done{ background:var(--sage); }
+  .rail-labels{ display:flex; justify-content:space-between; margin-top:6px; margin-bottom:16px; }
+  .rail-labels span{ font-size:10.5px; color:var(--ink-soft); text-align:center; flex:1; }
+  .rail-labels span.current{ color:var(--ink); font-weight:600; }
+  .rail-labels span:first-child{ text-align:left; flex:0 0 auto; }
+  .rail-labels span:last-child{ text-align:right; flex:0 0 auto; }
+  .foot{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .next{ font-size:13.5px; color:var(--ink); }
+  .next b{ color:var(--sage); font-weight:600; }
+  .btn{ flex:none; display:inline-block; padding:8px 18px; border-radius:999px; border:1px solid var(--ink); color:var(--ink); text-decoration:none; font-size:13.5px; font-weight:500; background:transparent; transition:background .15s ease, color .15s ease; }
+  .btn:hover{ background:var(--ink); color:var(--paper); }
+  .btn.muted{ border-color:var(--line); color:var(--ink-soft); pointer-events:none; }
+  .tag{ font-size:11px; color:var(--ink-soft); border:1px solid var(--line); border-radius:999px; padding:2px 9px; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Projects</h1>
+    <p>Where each build actually stands, and the one thing that moves it forward.</p>
+    <div class="status-line" id="status-line">Loading live data…</div>
+  </header>
+  <div id="projects"></div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://yxfwduvwhruedjyrtfhx.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4ZndkdXZ3aHJ1ZWRqeXJ0Zmh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0Mzg3OTIsImV4cCI6MjEwNDAxNDc5Mn0.g2hs-krdGWY1_H9I2KB12G8dN1fCUkuAsNdFh5ctXzE';
+  const STAGES = ["Inbox","Lab","Validating","Building","Shipped"];
+
+  function railHtml(currentIndex){
+    let rail = "";
+    STAGES.forEach((s, i) => {
+      const state = i < currentIndex ? "done" : (i === currentIndex ? "current" : "");
+      rail += `<div class="rail-step"><div class="rail-dot ${state}"></div>`;
+      if(i < STAGES.length - 1){
+        rail += `<div class="rail-track ${i < currentIndex ? "done" : ""}"></div>`;
+      }
+      rail += `</div>`;
+    });
+    let labels = "";
+    STAGES.forEach((s, i) => {
+      labels += `<span class="${i === currentIndex ? 'current' : ''}">${s}</span>`;
+    });
+    return `<div class="rail">${rail}</div><div class="rail-labels">${labels}</div>`;
+  }
+
+  function projectHtml(p){
+    let btn;
+    if(p.url){
+      btn = `<a class="btn" href="${p.url}" target="_blank">Open</a>`;
+    } else if(p.slug === 'cannarecall'){
+      btn = `<a class="btn muted" href="#">Parked</a>`;
+    } else {
+      btn = `<a class="btn muted" href="#">Not live yet</a>`;
+    }
+    return `
+      <div class="project">
+        <div class="project-head">
+          <div class="project-name">${p.name}</div>
+          <div class="tag">${p.tag}</div>
+        </div>
+        <p class="project-status">${p.summary || ""}</p>
+        ${railHtml(p.stage_index)}
+        <div class="foot">
+          <div class="next">Next: <b>${p.next_action || "—"}</b></div>
+          ${btn}
+        </div>
+      </div>`;
+  }
+
+  async function load(){
+    const statusLine = document.getElementById('status-line');
+    const container = document.getElementById('projects');
+    try{
+      const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      const { data, error } = await client
+        .from('meta_projects')
+        .select('*')
+        .order('sort_order');
+      if(error) throw error;
+      container.innerHTML = data.map(projectHtml).join("");
+      statusLine.textContent = "Live from Command Center — " + new Date().toLocaleString();
+    } catch(err){
+      statusLine.textContent = "Couldn't load live data (" + (err.message || err) + ") — check connection.";
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

@@ -743,13 +743,14 @@ function renderDeskResearch(item) {
 
   const d = item.deskResearch;
   wrap.appendChild(el('p', { text: 'Desk research', style: 'font-weight:600;margin:0 0 8px;' }));
-  (d.verified_findings || []).forEach(f => {
+  (Array.isArray(d.verified_findings) ? d.verified_findings : []).forEach(f => {
     wrap.appendChild(el('p', { text: f.question, style: 'margin:0 0 2px;font-weight:500;' }));
     wrap.appendChild(el('p', { text: f.finding + ' (' + f.source + ')', style: 'margin:0 0 8px;color:var(--text-muted);' }));
   });
-  if ((d.still_needs_you || []).length > 0) {
+  const stillNeedsYou = Array.isArray(d.still_needs_you) ? d.still_needs_you : [];
+  if (stillNeedsYou.length > 0) {
     wrap.appendChild(el('p', { text: 'Still needs you:', style: 'font-weight:600;margin:8px 0 4px;' }));
-    d.still_needs_you.forEach(t => wrap.appendChild(el('p', { text: '- ' + t, style: 'margin:0 0 4px;' })));
+    stillNeedsYou.forEach(t => wrap.appendChild(el('p', { text: '- ' + t, style: 'margin:0 0 4px;' })));
   }
   return wrap;
 }
