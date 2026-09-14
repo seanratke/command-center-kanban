@@ -56,11 +56,22 @@ if ("serviceWorker" in navigator) {
   .watchlist-idea { border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin-bottom: 1rem; }
   .watchlist-idea h4 { margin: 0 0 0.5rem; }
   .watchlist-flag { font-size: 0.85rem; background: #fdf4ff; border-left: 3px solid #a21caf; padding: 0.5rem 0.75rem; border-radius: 4px; margin-top: 0.5rem; }
+  .status-rail { margin: 0 0 14px; }
+  .status-rail-label { font-size: 0.75rem; color: #6b7280; margin: 0 0 6px; font-weight: 600; }
+  .rail { display:flex; align-items:center; margin-bottom:4px; max-width:280px; }
+  .rail-step { display:flex; align-items:center; flex:1; }
+  .rail-dot { width:7px; height:7px; border-radius:50%; background:#e5e7eb; flex:none; }
+  .rail-dot.done { background:#4f46e5; }
+  .rail-dot.current { width:10px; height:10px; background:transparent; border:2px solid #4f46e5; }
+  .rail-track { flex:1; height:1px; background:#e5e7eb; margin:0 3px; }
+  .rail-track.done { background:#4f46e5; }
+  .rail-stage { font-size:0.7rem; color:#4f46e5; font-weight:600; }
 </style>
 </head>
 <body>
   <h1>Opportunity Feed</h1>
-  <div style="display:flex;gap:10px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:#fff;"><a href="/" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Command Center</a><a href="/opportunities" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #4f46e5;color:#4f46e5;font-size:13px;font-weight:600;text-decoration:none;">Opportunities Feed</a><a href="/inventors" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Inventor Pool</a><a href="/roster" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Inventor Roster</a><a href="/needs" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #d97706;color:#d97706;font-size:13px;font-weight:600;text-decoration:none;">Needs Attention</a><a href="/projects" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Projects</a></div>
+  <div id="status-rail"></div>
+  <div style="display:flex;gap:10px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:#fff;"><a href="/" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Command Center</a><a href="/opportunities" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #4f46e5;color:#4f46e5;font-size:13px;font-weight:600;text-decoration:none;">Opportunities Feed</a><a href="/inventors" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Inventor Pool</a><a href="/roster" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Inventor Roster</a><a href="/needs" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #d97706;color:#d97706;font-size:13px;font-weight:600;text-decoration:none;">Needs Attention</a><a href="/projects" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Projects</a><a href="/" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Home</a></div>
   <div class="tabs">
     <button class="tab-btn active" data-filter="all" onclick="setFilter('all')">All</button>
     <button class="tab-btn" data-filter="main" onclick="setFilter('main')">Main</button>
@@ -80,7 +91,34 @@ if ("serviceWorker" in navigator) {
   </div>
   <div id="feed"><p class="empty">Loading...</p></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const sbClient = supabase.createClient(
+  'https://yxfwduvwhruedjyrtfhx.supabase.co',
+  'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy'
+);
+const META_STAGES = ["Inbox","Lab","Validating","Building","Shipped"];
+
+function metaRailHtml(currentIndex){
+  let rail = "";
+  META_STAGES.forEach((s, i) => {
+    const st = i < currentIndex ? "done" : (i === currentIndex ? "current" : "");
+    rail += `<div class="rail-step"><div class="rail-dot ${st}"></div>`;
+    if(i < META_STAGES.length - 1){
+      rail += `<div class="rail-track ${i < currentIndex ? "done" : ""}"></div>`;
+    }
+    rail += `</div>`;
+  });
+  return `<div class="status-rail"><p class="status-rail-label">Opportunities Engine status</p><div class="rail">${rail}</div><div class="rail-stage">${META_STAGES[currentIndex]}</div></div>`;
+}
+
+async function loadMetaStatus() {
+  const { data, error } = await sbClient.from('meta_projects').select('stage_index').eq('slug', 'opportunities-engine').single();
+  if (!error && data) {
+    document.getElementById('status-rail').innerHTML = metaRailHtml(data.stage_index);
+  }
+}
+
 let currentFilter = 'all';
 let currentConfidenceFilter = 'all';
 
@@ -303,6 +341,7 @@ function sparkHtml(op) {
 }
 
 loadFeed();
+loadMetaStatus();
 </script>
 </body>
 </html>

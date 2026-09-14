@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Command Center</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#14181F">
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js");
+  });
+}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #14181F;
+    --surface: #1C222C;
+    --surface-2: #232A36;
+    --border: #2C3442;
+    --text: #E7E9ED;
+    --text-muted: #8890A0;
+    --cyan: #4FB3BF;
+    --cyan-dim: rgba(79,179,191,0.15);
+    --amber: #D98E4F;
+    --amber-dim: rgba(217,142,79,0.18);
+    --danger: #C7645A;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+  }
+  html {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Public Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1400px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 20px;
+    margin-bottom: 4px;
+  }
+  .wordmark {
+    font-family: 'Archivo', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .wordmark span { color: var(--cyan); }
+  .tagline { color: var(--text-muted); font-size: 14px; margin: 0; }
+
+  .status-rail { margin: 4px 0 14px; }
+  .status-rail-label { font-size: 12px; color: var(--text-muted); margin: 0 0 6px; font-weight: 600; }
+  .rail { display:flex; align-items:center; margin-bottom:4px; max-width:280px; }
+  .rail-step { display:flex; align-items:center; flex:1; }
+  .rail-dot { width:7px; height:7px; border-radius:50%; background:var(--border); flex:none; }
+  .rail-dot.done { background:var(--cyan); }
+  .rail-dot.current { width:10px; height:10px; background:transparent; border:2px solid var(--cyan); }
+  .rail-track { flex:1; height:1px; background:var(--border); margin:0 3px; }
+  .rail-track.done { background:var(--cyan); }
+  .rail-stage { font-size:10.5px; color:var(--cyan); font-weight:600; }
+
+  .capture-row {
+    margin: 18px 0 22px;
+    display: flex;
+    gap: 10px;
+  }
+  .capture-row input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Public Sans', sans-serif;
+    font-size: 16px;
+    padding: 14px 16px;
+    outline: none;
+    transition: border-color .15s ease;
+  }
+  .capture-row input:focus { border-color: var(--cyan); }
+  .capture-row input::placeholder { color: var(--text-muted); }
+  .capture-row button {
+    background: var(--cyan);
+    color: #0C1116;
+    border: none;
+    border-radius: 10px;
+    padding: 0 20px;
+    font-family: 'Public Sans', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .capture-row button:active { transform: scale(0.98); }
+
+  .toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .toolbar-row input {
+    flex: 1;
+    min-width: 160px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Public Sans', sans-serif;
+    font-size: 14px;
+    padding: 9px 12px;
+    outline: none;
+  }
+  .toolbar-row input:focus { border-color: var(--cyan); }
+  .toolbar-row .tbtn {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 8px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-family: 'Public Sans', sans-serif;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .toolbar-row .tbtn:hover { color: var(--text); }
+
+  .graveyard-modal { max-width: 520px; }
+  .grave-row {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 2px;
+  }
+  .grave-row:last-child { border-bottom: none; }
+  .grave-title { font-weight: 600; font-size: 14.5px; margin: 0 0 3px; }
+  .grave-reason { color: var(--text-muted); font-size: 13px; margin: 0 0 3px; }
+  .grave-meta { color: var(--text-muted); font-size: 11px; }
+  .grave-empty { color: var(--text-muted); font-size: 14px; padding: 10px 2px; }
+
+  .decision-banner {
+    background: var(--amber-dim);
+    border: 1px solid rgba(217,142,79,0.4);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 16px;
+  }
+  .decision-banner .db-text { flex: 1; min-width: 200px; }
+  .decision-banner .db-label { color: var(--amber); font-weight: 600; font-size: 13px; margin-bottom: 2px; }
+  .decision-banner .db-title { font-weight: 600; font-size: 15px; }
+  .decision-banner .db-meta { color: var(--text-muted); font-size: 13px; margin-top: 2px; }
+  .db-actions { display: flex; gap: 8px; }
+  .db-actions button {
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-family: 'Public Sans', sans-serif;
+    cursor: pointer;
+  }
+  .db-actions button.primary { background: var(--amber); color: #211405; border: none; font-weight: 600; }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(230px, 1fr));
+    gap: 14px;
+    overflow-x: auto;
+  }
+  @media (max-width: 900px) {
+    .board { grid-template-columns: 1fr; overflow-x: visible; }
+  }
+
+  .column {
+    background: rgba(255,255,255,0.015);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 120px;
+  }
+  .column-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 2px;
+  }
+  .column-head h2 {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+  }
+  .column-head .count {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: var(--surface-2);
+    border-radius: 20px;
+    padding: 2px 8px;
+  }
+  .empty-col {
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 18px 6px;
+    line-height: 1.5;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 12px 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  .card:hover { border-color: #3A4353; }
+  .card-title {
+    font-weight: 600;
+    font-size: 14.5px;
+    margin: 0 0 4px;
+    line-height: 1.3;
+  }
+  .card-note {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.4;
+    margin: 0 0 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .card-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag {
+    font-size: 11px;
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    border-radius: 6px;
+    padding: 2px 6px;
+  }
+  .heat { display: flex; gap: 2px; }
+  .heat i {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border);
+    display: inline-block;
+  }
+  .heat i.on { background: var(--amber); }
+  .card-days { color: var(--text-muted); font-size: 11px; margin-top: 6px; }
+
+  .move-row { display: flex; gap: 6px; margin-top: 8px; }
+  .move-row button {
+    flex: 1;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: 5px 0;
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .move-row button:disabled { opacity: 0.3; cursor: default; }
+
+  /* Modal */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,12,16,0.6);
+    display: flex; align-items: flex-end; justify-content: center;
+    z-index: 50;
+  }
+  @media (min-width: 700px) {
+    .overlay { align-items: center; }
+  }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  @media (min-width: 700px) {
+    .modal { border-radius: 16px; }
+  }
+  .modal label {
+    display: block;
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 14px 0 6px;
+  }
+  .modal label:first-of-type { margin-top: 0; }
+  .modal input[type=text], .modal textarea {
+    width: 100%;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Public Sans', sans-serif;
+    font-size: 15px;
+    padding: 10px 12px;
+    outline: none;
+    resize: vertical;
+  }
+  .modal textarea { min-height: 90px; }
+  .heat-picker { display: flex; gap: 8px; }
+  .heat-picker button {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-muted);
+    cursor: pointer;
+  }
+  .heat-picker button.active { background: var(--amber); border-color: var(--amber); color: #211405; }
+  .modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 22px;
+    gap: 10px;
+  }
+  .modal-actions .right { display: flex; gap: 10px; }
+  .btn {
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    font-family: 'Public Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-ghost { background: transparent; color: var(--danger); border: 1px solid rgba(199,100,90,0.4); }
+  .btn-secondary { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+  .btn-primary { background: var(--cyan); color: #0C1116; }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://yxfwduvwhruedjyrtfhx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy';
+const sbClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const STAGES = [
+  { key: 'inbox', label: 'Inbox' },
+  { key: 'lab', label: 'Lab' },
+  { key: 'validating', label: 'Validating' },
+  { key: 'building', label: 'Building' },
+  { key: 'shipped', label: 'Shipped' },
+  { key: 'killed', label: 'Killed' },
+];
+
+let state = { items: [], loaded: false, loadError: null, openItem: null, editBuffer: null, search: '', showGraveyard: false, metaStageIndex: null };
+
+const META_STAGES = ["Inbox","Lab","Validating","Building","Shipped"];
+
+function metaRailHtml(currentIndex){
+  let rail = "";
+  META_STAGES.forEach((s, i) => {
+    const st = i < currentIndex ? "done" : (i === currentIndex ? "current" : "");
+    rail += `<div class="rail-step"><div class="rail-dot ${st}"></div>`;
+    if(i < META_STAGES.length - 1){
+      rail += `<div class="rail-track ${i < currentIndex ? "done" : ""}"></div>`;
+    }
+    rail += `</div>`;
+  });
+  return `<div class="status-rail"><p class="status-rail-label">Command Center status</p><div class="rail">${rail}</div><div class="rail-stage">${META_STAGES[currentIndex]}</div></div>`;
+}
+
+async function loadMetaStatus() {
+  const { data, error } = await sbClient.from('meta_projects').select('stage_index').eq('slug', 'command-center').single();
+  if (!error && data) {
+    state.metaStageIndex = data.stage_index;
+    render();
+  }
+}
+
+function daysSince(ts) {
+  return Math.floor((Date.now() - ts) / 86400000);
+}
+
+function rowToItem(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    note: row.note || '',
+    tags: row.tags || [],
+    heat: row.heat || 0,
+    stage: row.stage,
+    createdAt: new Date(row.created_at).getTime(),
+    updatedAt: new Date(row.updated_at).getTime(),
+    killReason: row.kill_reason || '',
+    reviewStatus: row.review_status || null,
+    reviewTranscript: row.review_transcript || null,
+    reviewQuestions: row.review_questions || null,
+    reviewAnswers: row.review_answers || null,
+    rejectionReport: row.rejection_report || null,
+    overrideUsed: row.override_used || false,
+    participationPath: row.participation_path || null,
+    buildRecommendation: row.build_recommendation || null,
+    validationFindings: row.validation_findings || null,
+    validationVerdict: row.validation_verdict || null,
+    deskResearch: row.desk_research || null,
+  };
+}
+
+async function loadItems() {
+  const { data, error } = await sbClient.from('items').select('*').order('created_at', { ascending: false });
+  if (error) {
+    console.error('load failed', error);
+    state.loadError = error.message;
+    state.items = [];
+  } else {
+    state.items = data.map(rowToItem);
+  }
+  state.loaded = true;
+  render();
+}
+
+async function persistItem(item) {
+  const { error } = await sbClient.from('items').update({
+    title: item.title,
+    note: item.note,
+    tags: item.tags,
+    heat: item.heat,
+    stage: item.stage,
+    kill_reason: item.killReason || null,
+    updated_at: new Date(item.updatedAt).toISOString(),
+  }).eq('id', item.id);
+  if (error) console.error('update failed', error);
+}
+
+async function addItem(title) {
+  title = title.trim();
+  if (!title) return;
+  try {
+    const res = await fetch('/api/items-add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title })
+    });
+    const result = await res.json();
+    if (!res.ok || !result.item) { console.error('add failed', result); return; }
+    await loadItems();
+    render();
+  } catch (e) {
+    console.error('addItem failed:', e);
+  }
+}
+
+function touchItem(item) { item.updatedAt = Date.now(); }
+
+function moveStage(item, dir) {
+  const idx = STAGES.findIndex(s => s.key === item.stage);
+  const nextIdx = idx + dir;
+  if (nextIdx < 0 || nextIdx >= STAGES.length) return;
+  item.stage = STAGES[nextIdx].key;
+  touchItem(item);
+  persistItem(item);
+  render();
+}
+
+function killItem(item) {
+  item.stage = 'killed';
+  touchItem(item);
+  persistItem(item);
+  render();
+}
+
+async function deleteItem(id) {
+  state.items = state.items.filter(i => i.id !== id);
+  state.openItem = null;
+  render();
+  const { error } = await sbClient.from('items').delete().eq('id', id);
+  if (error) console.error('delete failed', error);
+}
+
+function openModal(item) {
+  state.openItem = item.id;
+  state.editBuffer = { title: item.title, note: item.note, tags: item.tags.join(', '), heat: item.heat };
+  render();
+}
+
+function closeModal() {
+  state.openItem = null;
+  state.editBuffer = null;
+  render();
+}
+
+function saveModal() {
+  const item = state.items.find(i => i.id === state.openItem);
+  if (!item) return;
+  const b = state.editBuffer;
+  item.title = b.title.trim() || item.title;
+  item.note = b.note;
+  item.tags = b.tags.split(',').map(t => t.trim()).filter(Boolean);
+  item.heat = b.heat;
+  touchItem(item);
+  persistItem(item);
+  closeModal();
+}
+
+function killFromModal(item) {
+  item.stage = 'killed';
+  touchItem(item);
+  persistItem(item);
+  renderModalOnly();
+}
+
+function exportBackup() {
+  const blob = new Blob([JSON.stringify(state.items, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `command-center-backup-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function toggleGraveyard() {
+  state.showGraveyard = !state.showGraveyard;
+  render();
+}
+
+function matchesSearch(item, term) {
+  if (!term) return true;
+  const t = term.toLowerCase();
+  return item.title.toLowerCase().includes(t)
+    || (item.note || '').toLowerCase().includes(t)
+    || item.tags.some(tag => tag.toLowerCase().includes(t));
+}
+
+function findOldestNeglected() {
+  const active = state.items.filter(i => i.stage !== 'shipped' && i.stage !== 'killed');
+  if (!active.length) return null;
+  return active.reduce((oldest, i) => i.updatedAt < oldest.updatedAt ? i : oldest, active[0]);
+}
+
+function el(tag, attrs, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (v == null) continue;
+    if (k === 'text') e.textContent = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (k === 'class') e.className = v;
+    else e.setAttribute(k, v);
+  }
+  children.flat().forEach(c => { if (c) e.appendChild(c); });
+  return e;
+}
+
+async function callReviewPanel(id, action, extra) {
+  const body = Object.assign({ id, action }, extra || {});
+  const res = await fetch('/api/review-panel', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) { alert('Review panel error: ' + (await res.text())); return null; }
+  return res.json();
+}
+
+async function runReview(item) {
+  const btn = event ? event.target : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Reviewing...'; }
+  await callReviewPanel(item.id, 'review');
+  await loadItems();
+  render();
+}
+
+async function submitAnswers(item, wrapEl) {
+  const inputs = wrapEl.querySelectorAll('.review-answer-input');
+  const answers = {};
+  let allFilled = true;
+  inputs.forEach((inp, i) => {
+    const v = inp.value.trim();
+    if (!v) allFilled = false;
+    answers[i] = v;
+  });
+  if (!allFilled) {
+    let errEl = wrapEl.querySelector('.review-answer-error');
+    if (!errEl) {
+      errEl = el('p', { class: 'review-answer-error', text: 'Please answer every question first.', style: 'color:var(--text-danger);font-size:12px;margin:4px 0;' });
+      wrapEl.appendChild(errEl);
+    }
+    return;
+  }
+  await callReviewPanel(item.id, 'answer', { answers });
+  await loadItems();
+  render();
+}
+
+async function submitOverride(item) {
+  const reasoning = window.prompt('Why do you want to override the panel\'s rejection?');
+  if (!reasoning) return;
+  await callReviewPanel(item.id, 'override', { reasoning });
+  await loadItems();
+  render();
+}
+
+function renderReviewSection(item) {
+  if (item.stage !== 'inbox') return null;
+  const wrap = el('div', { class: 'review-section', style: 'margin:10px 0;padding:10px;border:1px dashed var(--border);border-radius:8px;font-size:13px;' });
+
+  if (!item.reviewStatus) {
+    wrap.appendChild(el('button', {
+      text: 'Run panel review',
+      onclick: (e) => { e.stopPropagation(); runReview(item); }
+    }));
+    return wrap;
+  }
+
+  if (item.reviewStatus === 'needs_input') {
+    wrap.appendChild(el('p', { text: 'Panel has questions for you:', style: 'font-weight:600;margin:0 0 8px;' }));
+    (item.reviewQuestions || []).forEach(q => {
+      wrap.appendChild(el('p', { text: q.question, style: 'margin:0 0 4px;font-weight:500;' }));
+      wrap.appendChild(el('input', {
+        class: 'review-answer-input',
+        type: 'text',
+        placeholder: 'Your answer...',
+        onclick: (e) => e.stopPropagation(),
+        style: 'width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:10px;border:1px solid var(--border);border-radius:6px;background:var(--surface-1);color:var(--text-primary);font-size:13px;'
+      }));
+    });
+    wrap.appendChild(el('button', {
+      text: 'Submit answers',
+      onclick: (e) => { e.stopPropagation(); submitAnswers(item, wrap); }
+    }));
+    return wrap;
+  }
+
+  if (item.reviewStatus === 'rejected') {
+    const r = item.rejectionReport || {};
+    wrap.appendChild(el('p', { text: 'Panel rejected: ' + (r.main_reason || ''), style: 'font-weight:600;margin:0 0 6px;color:var(--text-danger);' }));
+    if (r.reconsider_if) wrap.appendChild(el('p', { text: 'Reconsider if: ' + r.reconsider_if, style: 'margin:0 0 6px;' }));
+    wrap.appendChild(el('button', {
+      text: 'Override and send to Lab',
+      onclick: (e) => { e.stopPropagation(); submitOverride(item); }
+    }));
+    wrap.appendChild(el('button', {
+      text: 'Agree  Kill it',
+      style: 'margin-left:8px;',
+      onclick: (e) => { e.stopPropagation(); killItem(item); }
+    }));
+    return wrap;
+  }
+
+  if (item.reviewStatus === 'approved') {
+    wrap.appendChild(el('p', { text: 'Panel approved -- moved to Lab.', style: 'margin:0;color:var(--text-success);' }));
+    return wrap;
+  }
+
+  if (item.reviewStatus === 'overridden') {
+    wrap.appendChild(el('p', { text: 'You overrode the panel\'s rejection -- moved to Lab.', style: 'margin:0;' }));
+    return wrap;
+  }
+
+  return null;
+}
+
+function renderParticipationPath(item) {
+  if (!item.participationPath) return null;
+  const p = item.participationPath;
+  return el('div', { style: 'margin:8px 0;padding:10px;border:1px dashed var(--amber);border-radius:8px;font-size:13px;background:var(--amber-dim);' },
+    el('p', { text: 'Path to participation: ' + (p.model || ''), style: 'font-weight:600;margin:0 0 4px;color:var(--amber);' }),
+    p.first_move ? el('p', { text: 'First move: ' + p.first_move, style: 'margin:0;' }) : null
+  );
+}
+
+function renderBuildRecommendation(item) {
+  if (!item.buildRecommendation) return null;
+  const b = item.buildRecommendation;
+  const typeLabels = { software: 'Build: software', research_report: 'Produce: research report', pitch_document: 'Produce: pitch document', supporting_tool: 'Build: supporting tool', proof_of_concept: 'Build: proof of concept' };
+  return el('div', { style: 'margin:8px 0;padding:10px;border:1px dashed var(--cyan);border-radius:8px;font-size:13px;background:var(--cyan-dim);' },
+    el('p', { text: typeLabels[b.artifact_type] || 'What to build first', style: 'font-weight:600;margin:0 0 6px;color:var(--cyan);' }),
+    el('p', { text: b.what_to_build_first || '', style: 'margin:0 0 6px;' }),
+    b.approach ? el('p', { text: 'Approach: ' + b.approach, style: 'margin:0 0 6px;color:var(--text-muted);' }) : null,
+    b.estimated_scope ? el('p', { text: 'Scope: ' + b.estimated_scope, style: 'margin:0;font-style:italic;color:var(--text-muted);' }) : null
+  );
+}
+
+async function submitFindings(item, wrapEl) {
+  const textarea = wrapEl.querySelector('.findings-input');
+  const findings = textarea.value.trim();
+  if (!findings) {
+    let errEl = wrapEl.querySelector('.findings-error');
+    if (!errEl) {
+      errEl = el('p', { class: 'findings-error', text: 'Enter what you found first.', style: 'color:var(--text-danger);font-size:12px;margin:4px 0;' });
+      wrapEl.appendChild(errEl);
+    }
+    return;
+  }
+  const btn = event ? event.target : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Reading your findings...'; }
+  await fetch('/api/validating-assistant', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: item.id, findings })
+  });
+  await loadItems();
+  render();
+}
+
+function renderValidation(item) {
+  if (item.stage !== 'lab') return null;
+  const wrap = el('div', { class: 'validation-section', style: 'margin:10px 0;padding:10px;border:1px dashed var(--border);border-radius:8px;font-size:13px;' });
+
+  if (item.validationVerdict) {
+    const v = item.validationVerdict;
+    const colorVar = v.recommendation === 'advance' ? 'var(--text-success)' : v.recommendation === 'kill' ? 'var(--text-danger)' : 'var(--amber)';
+    wrap.appendChild(el('p', { text: 'Verdict: ' + v.recommendation, style: 'font-weight:600;margin:0 0 6px;color:' + colorVar + ';' }));
+    wrap.appendChild(el('p', { text: v.reasoning || '', style: 'margin:0 0 6px;' }));
+    if (v.pivot_suggestion) wrap.appendChild(el('p', { text: 'Pivot to: ' + v.pivot_suggestion, style: 'margin:0;font-style:italic;' }));
+    return wrap;
+  }
+
+  wrap.appendChild(el('p', { text: 'Done the Lab work? Log what you found:', style: 'font-weight:600;margin:0 0 8px;' }));
+  wrap.appendChild(el('textarea', {
+    class: 'findings-input',
+    rows: '4',
+    placeholder: 'What did you actually find out there...',
+    onclick: (e) => e.stopPropagation(),
+    style: 'width:100%;box-sizing:border-box;padding:6px 8px;margin-bottom:8px;border:1px solid var(--border);border-radius:6px;background:var(--surface-1);color:var(--text-primary);font-size:13px;font-family:inherit;'
+  }));
+  wrap.appendChild(el('button', {
+    text: 'Get a verdict',
+    onclick: (e) => { e.stopPropagation(); submitFindings(item, wrap); }
+  }));
+  return wrap;
+}
+
+async function runDeskResearch(item) {
+  const btn = event ? event.target : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Researching...'; }
+  await fetch('/api/lab-research', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: item.id })
+  });
+  await loadItems();
+  render();
+}
+
+function renderDeskResearch(item) {
+  if (item.stage !== 'lab' || !item.buildRecommendation) return null;
+  const wrap = el('div', { style: 'margin:8px 0;padding:10px;border:1px dashed var(--purple);border-radius:8px;font-size:13px;' });
+
+  if (!item.deskResearch) {
+    wrap.appendChild(el('button', {
+      text: 'Do the desk research',
+      onclick: (e) => { e.stopPropagation(); runDeskResearch(item); }
+    }));
+    return wrap;
+  }
+
+  const d = item.deskResearch;
+  wrap.appendChild(el('p', { text: 'Desk research', style: 'font-weight:600;margin:0 0 8px;' }));
+  (Array.isArray(d.verified_findings) ? d.verified_findings : []).forEach(f => {
+    wrap.appendChild(el('p', { text: f.question, style: 'margin:0 0 2px;font-weight:500;' }));
+    wrap.appendChild(el('p', { text: f.finding + ' (' + f.source + ')', style: 'margin:0 0 8px;color:var(--text-muted);' }));
+  });
+  const stillNeedsYou = Array.isArray(d.still_needs_you) ? d.still_needs_you : [];
+  if (stillNeedsYou.length > 0) {
+    wrap.appendChild(el('p', { text: 'Still needs you:', style: 'font-weight:600;margin:8px 0 4px;' }));
+    stillNeedsYou.forEach(t => wrap.appendChild(el('p', { text: '- ' + t, style: 'margin:0 0 4px;' })));
+  }
+  return wrap;
+}
+
+function renderCard(item, idx) {
+
+  const stageIdx = STAGES.findIndex(s => s.key === item.stage);
+  const days = daysSince(item.updatedAt);
+
+  const heatDots = el('div', { class: 'heat' },
+    [1,2,3].map(n => el('i', { class: item.heat >= n ? 'on' : '' }))
+  );
+
+  const tagsEl = el('div', { class: 'tags' },
+    item.tags.slice(0,3).map(t => el('span', { class: 'tag', text: t }))
+  );
+
+  const foot = el('div', { class: 'card-foot' }, tagsEl, heatDots);
+
+  const moveRow = (item.stage !== 'killed') ? el('div', { class: 'move-row' },
+    el('button', {
+      disabled: stageIdx <= 0 ? 'true' : null,
+      onclick: (e) => { e.stopPropagation(); moveStage(item, -1); },
+      text: '‹ Back'
+    }),
+    el('button', {
+      disabled: (stageIdx >= STAGES.length - 2 || (item.stage === 'inbox' && item.reviewStatus !== 'approved' && item.reviewStatus !== 'overridden')) ? 'true' : null,
+      onclick: (e) => { e.stopPropagation(); moveStage(item, 1); },
+      text: item.stage === 'building' ? 'Ship ›' : 'Advance ›'
+    })
+  ) : null;
+
+  const card = el('div', { class: 'card', onclick: () => openModal(item) },
+    el('p', { class: 'card-title', text: item.title }),
+    item.note ? el('p', { class: 'card-note', text: item.note }) : null,
+    renderReviewSection(item),
+    renderParticipationPath(item),
+    renderBuildRecommendation(item),
+    renderDeskResearch(item),
+    renderValidation(item),
+    foot,
+    moveRow,
+    el('div', { class: 'card-days', text: days === 0 ? 'touched today' : `sat for ${days} day${days === 1 ? '' : 's'}` })
+  );
+  if (item.stage !== 'killed' && item.stage !== 'shipped' && item.attrs) card.setAttribute('disabled', 'true');
+  return card;
+}
+
+function renderBoard() {
+  const board = el('div', { class: 'board' });
+  STAGES.forEach(stage => {
+    const items = state.items
+      .filter(i => i.stage === stage.key && matchesSearch(i, state.search))
+      .sort((a, b) => b.updatedAt - a.updatedAt);
+    const col = el('div', { class: 'column' },
+      el('div', { class: 'column-head' },
+        el('h2', { text: stage.label }),
+        el('span', { class: 'count', text: items.length })
+      ),
+      items.length
+        ? items.map((it, i) => renderCard(it, i))
+        : el('div', { class: 'empty-col', text: emptyMessage(stage.key) })
+    );
+    board.appendChild(col);
+  });
+  return board;
+}
+
+function emptyMessage(key) {
+  return {
+    inbox: 'Nothing waiting. Drop a raw idea in the box above.',
+    lab: 'Nothing being researched right now — this is where ideas go to get real data before you commit to building them.',
+    validating: 'Nothing being tested right now.',
+    building: 'Nothing in active build.',
+    shipped: 'Nothing shipped yet — that changes soon.',
+    killed: 'Nothing killed. A healthy pipeline kills things on purpose.'
+  }[key];
+}
+
+function renderDecisionBanner() {
+  const item = findOldestNeglected();
+  if (!item) return null;
+  const days = daysSince(item.updatedAt);
+  if (days < 3) return null;
+  return el('div', { class: 'decision-banner' },
+    el('div', { class: 'db-text' },
+      el('div', { class: 'db-label', text: 'Needs a decision' }),
+      el('div', { class: 'db-title', text: item.title }),
+      el('div', { class: 'db-meta', text: `Untouched for ${days} days, sitting in ${STAGES.find(s=>s.key===item.stage).label}` })
+    ),
+    el('div', { class: 'db-actions' },
+      el('button', { text: 'Kill it', onclick: () => killItem(item) }),
+      el('button', { class: 'primary', text: 'Still alive — touch it', onclick: () => { touchItem(item); persistItem(item); render(); } })
+    )
+  );
+}
+
+function renderModal() {
+  if (!state.openItem) return null;
+  const item = state.items.find(i => i.id === state.openItem);
+  if (!item) return null;
+  const b = state.editBuffer;
+
+  const titleInput = el('input', { type: 'text', value: b.title, oninput: (e) => b.title = e.target.value });
+  const noteInput = el('textarea', { oninput: (e) => b.note = e.target.value });
+  noteInput.value = b.note;
+  const tagsInput = el('input', { type: 'text', value: b.tags, oninput: (e) => b.tags = e.target.value, placeholder: 'e.g. mobile, needs-design' });
+
+  const heatPicker = el('div', { class: 'heat-picker' },
+    [1,2,3].map(n => el('button', {
+      class: b.heat >= n ? 'active' : '',
+      text: n,
+      onclick: () => { b.heat = (b.heat === n) ? 0 : n; renderModalOnly(); }
+    }))
+  );
+
+  const reasonBlock = (item.stage === 'killed') ? [
+    el('label', { text: 'Why did this die? (feeds the graveyard log)' }),
+    (() => {
+      const ta = el('textarea', { oninput: (e) => { item.killReason = e.target.value; } });
+      ta.value = item.killReason || '';
+      ta.addEventListener('blur', () => persistItem(item));
+      return ta;
+    })()
+  ] : [];
+
+  const killBtn = (item.stage !== 'killed') ? el('button', {
+    class: 'btn btn-ghost', text: 'Kill', onclick: () => killFromModal(item)
+  }) : null;
+
+  const modal = el('div', { class: 'modal' },
+    el('label', { text: 'Title' }), titleInput,
+    el('label', { text: 'Notes' }), noteInput,
+    el('label', { text: 'Tags (comma separated)' }), tagsInput,
+    el('label', { text: 'Priority heat' }), heatPicker,
+    ...reasonBlock,
+    el('div', { class: 'modal-actions' },
+      el('div', { class: 'right' },
+        el('button', { class: 'btn btn-ghost', text: 'Delete', onclick: () => deleteItem(item.id) }),
+        killBtn
+      ),
+      el('div', { class: 'right' },
+        el('button', { class: 'btn btn-secondary', text: 'Cancel', onclick: closeModal }),
+        el('button', { class: 'btn btn-primary', text: 'Save', onclick: saveModal })
+      )
+    )
+  );
+  return el('div', { class: 'overlay', onclick: (e) => { if (e.target.classList.contains('overlay')) closeModal(); } }, modal);
+}
+
+function renderGraveyard() {
+  if (!state.showGraveyard) return null;
+  const killed = state.items.filter(i => i.stage === 'killed').sort((a,b) => b.updatedAt - a.updatedAt);
+  const rows = killed.length
+    ? killed.map(i => el('div', { class: 'grave-row' },
+        el('p', { class: 'grave-title', text: i.title }),
+        el('p', { class: 'grave-reason', text: i.killReason ? i.killReason : 'No reason logged yet.' }),
+        el('p', { class: 'grave-meta', text: `killed ${daysSince(i.updatedAt)} days ago` })
+      ))
+    : [el('p', { class: 'grave-empty', text: 'Nothing killed yet. Once something is, the reason lands here so you can spot patterns.' })];
+
+  const modal = el('div', { class: 'modal graveyard-modal' },
+    el('label', { text: 'Graveyard' }),
+    ...rows,
+    el('div', { class: 'modal-actions' },
+      el('div', {}),
+      el('div', { class: 'right' },
+        el('button', { class: 'btn btn-secondary', text: 'Close', onclick: toggleGraveyard })
+      )
+    )
+  );
+  return el('div', { class: 'overlay', onclick: (e) => { if (e.target.classList.contains('overlay')) toggleGraveyard(); } }, modal);
+}
+
+function renderModalOnly() {
+  const existing = document.querySelector('.overlay');
+  if (existing) existing.replaceWith(renderModal());
+}
+
+function render() {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  if (!state.loaded) {
+    app.appendChild(el('p', { text: 'Loading…', style: 'color:#8890A0' }));
+    return;
+  }
+
+  app.appendChild(el('header', {},
+    el('h1', { class: 'wordmark' }, (() => {
+      const h = document.createElement('h1');
+      h.className = 'wordmark';
+      h.innerHTML = 'Command<span> Center</span>';
+      return h;
+    })()),
+  ));
+  if (state.metaStageIndex !== null && state.metaStageIndex !== undefined) {
+    const railWrap = document.createElement('div');
+    railWrap.innerHTML = metaRailHtml(state.metaStageIndex);
+    app.appendChild(railWrap.firstElementChild);
+  }
+  app.appendChild(el('p', { class: 'tagline', text: 'Every idea gets a home. Nothing rots in silence.' }));
+  app.appendChild(el('div', { style: 'display:flex;gap:10px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:var(--bg);' }, [
+    el('a', { href: '/', style: 'padding:8px 16px;border-radius:999px;background:var(--surface-2);border:2px solid var(--cyan);color:var(--cyan);font-size:13px;font-weight:600;text-decoration:none;', text: 'Command Center' }),
+    el('a', { href: '/opportunities', style: 'padding:8px 16px;border-radius:999px;background:var(--surface-2);border:2px solid var(--border);color:var(--text);font-size:13px;font-weight:600;text-decoration:none;', text: 'Opportunities Feed' }),
+    el('a', { href: '/inventors', style: 'padding:8px 16px;border-radius:999px;background:var(--surface-2);border:2px solid var(--border);color:var(--text);font-size:13px;font-weight:600;text-decoration:none;', text: 'Inventor Pool' }),
+    el('a', { href: '/roster', style: 'padding:8px 16px;border-radius:999px;background:var(--surface-2);border:2px solid var(--border);color:var(--text);font-size:13px;font-weight:600;text-decoration:none;', text: 'Inventor Roster' }),
+    el('a', { href: '/needs', style: 'padding:8px 16px;border-radius:999px;background:var(--surface-2);border:2px solid var(--amber);color:var(--amber);font-size:13px;font-weight:600;text-decoration:none;', text: 'Needs Attention' }),
+    el('a', { href: '/projects', style: 'padding:8px 16px;border-radius:999px;background:var(--surface-2);border:2px solid var(--border);color:var(--text);font-size:13px;font-weight:600;text-decoration:none;', text: 'Projects' }),
+    el('a', { href: '/', style: 'padding:8px 16px;border-radius:999px;background:var(--surface-2);border:2px solid var(--border);color:var(--text);font-size:13px;font-weight:600;text-decoration:none;', text: 'Home' })
+  ]));
+
+  if (state.loadError) {
+    app.appendChild(el('p', { style: 'color:#C7645A;font-size:13px;margin:0 0 12px;', text: `Sync error: ${state.loadError}` }));
+  }
+
+  const inputEl = el('input', {
+    type: 'text',
+    placeholder: 'Dump an idea — press enter',
+    onkeydown: (e) => { if (e.key === 'Enter') { addItem(e.target.value); e.target.value = ''; } }
+  });
+  const captureRow = el('div', { class: 'capture-row' },
+    inputEl,
+    el('button', { text: 'Add', onclick: () => { addItem(inputEl.value); inputEl.value = ''; inputEl.focus(); } })
+  );
+  app.appendChild(captureRow);
+
+  const searchInput = el('input', {
+    type: 'text', placeholder: 'Search titles, notes, tags…', value: state.search,
+    oninput: (e) => { state.search = e.target.value; renderBoardOnly(); }
+  });
+  const toolbar = el('div', { class: 'toolbar-row' },
+    searchInput,
+    el('button', { class: 'tbtn', text: 'Graveyard', onclick: toggleGraveyard }),
+    el('button', { class: 'tbtn', text: 'Export backup', onclick: exportBackup })
+  );
+  app.appendChild(toolbar);
+
+  const banner = renderDecisionBanner();
+  if (banner) app.appendChild(banner);
+
+  app.appendChild(renderBoard());
+
+  const modal = renderModal();
+  if (modal) app.appendChild(modal);
+
+  const grave = renderGraveyard();
+  if (grave) app.appendChild(grave);
+}
+
+function renderBoardOnly() {
+  const old = document.querySelector('.board');
+  if (old) old.replaceWith(renderBoard());
+}
+
+loadItems();
+loadMetaStatus();
+</script>
+</body>
+</html>

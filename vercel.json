@@ -37,6 +37,10 @@
     {
       "source": "/projects",
       "destination": "/projects.html"
+    },
+    {
+      "source": "/board",
+      "destination": "/board.html"
     }
   ],
   "functions": {
