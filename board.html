@@ -990,7 +990,7 @@ function render() {
     app.appendChild(railWrap.firstElementChild);
   }
   app.appendChild(el('p', { class: 'tagline', text: 'Every idea gets a home. Nothing rots in silence.' }));
-  app.appendChild(el('div', { id: 'site-nav', style: 'display:flex;gap:10px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:var(--bg);' }));
+  app.appendChild(el('div', { id: 'site-nav', style: 'display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:var(--bg);' }));
   renderSiteNav('board');
 
   if (state.loadError) {
