@@ -386,6 +386,7 @@ function rowToItem(row) {
     buildRecommendation: row.build_recommendation || null,
     validationFindings: row.validation_findings || null,
     validationVerdict: row.validation_verdict || null,
+    deskResearch: row.desk_research || null,
   };
 }
 
@@ -716,6 +717,43 @@ function renderValidation(item) {
   return wrap;
 }
 
+async function runDeskResearch(item) {
+  const btn = event ? event.target : null;
+  if (btn) { btn.disabled = true; btn.textContent = 'Researching...'; }
+  await fetch('/api/lab-research', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: item.id })
+  });
+  await loadItems();
+  render();
+}
+
+function renderDeskResearch(item) {
+  if (item.stage !== 'lab' || !item.buildRecommendation) return null;
+  const wrap = el('div', { style: 'margin:8px 0;padding:10px;border:1px dashed var(--purple);border-radius:8px;font-size:13px;' });
+
+  if (!item.deskResearch) {
+    wrap.appendChild(el('button', {
+      text: 'Do the desk research',
+      onclick: (e) => { e.stopPropagation(); runDeskResearch(item); }
+    }));
+    return wrap;
+  }
+
+  const d = item.deskResearch;
+  wrap.appendChild(el('p', { text: 'Desk research', style: 'font-weight:600;margin:0 0 8px;' }));
+  (d.verified_findings || []).forEach(f => {
+    wrap.appendChild(el('p', { text: f.question, style: 'margin:0 0 2px;font-weight:500;' }));
+    wrap.appendChild(el('p', { text: f.finding + ' (' + f.source + ')', style: 'margin:0 0 8px;color:var(--text-muted);' }));
+  });
+  if ((d.still_needs_you || []).length > 0) {
+    wrap.appendChild(el('p', { text: 'Still needs you:', style: 'font-weight:600;margin:8px 0 4px;' }));
+    d.still_needs_you.forEach(t => wrap.appendChild(el('p', { text: '- ' + t, style: 'margin:0 0 4px;' })));
+  }
+  return wrap;
+}
+
 function renderCard(item, idx) {
 
   const stageIdx = STAGES.findIndex(s => s.key === item.stage);
@@ -750,6 +788,7 @@ function renderCard(item, idx) {
     renderReviewSection(item),
     renderParticipationPath(item),
     renderBuildRecommendation(item),
+    renderDeskResearch(item),
     renderValidation(item),
     foot,
     moveRow,
