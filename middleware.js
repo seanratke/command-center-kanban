@@ -15,11 +15,16 @@ async function sha256(text) {
 }
 
 export default async function middleware(request) {
-  const cookieValue = getCookie(request, 'site_auth');
-  const expected = await sha256(process.env.SITE_PASSWORD || '');
-  if (cookieValue === expected) {
-    return next();
+  const sitePassword = process.env.SITE_PASSWORD;
+  if (sitePassword) {
+    const cookieValue = getCookie(request, 'site_auth');
+    const expected = await sha256(sitePassword);
+    if (cookieValue === expected) {
+      return next();
+    }
   }
+  // Fail closed: with no SITE_PASSWORD configured, never let a request through,
+  // regardless of what cookie value it presents.
   const url = new URL('/login.html', request.url);
   return Response.redirect(url);
 }
