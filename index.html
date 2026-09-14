@@ -31,7 +31,7 @@
   .wordmark { font-family:'Archivo', sans-serif; font-weight:900; font-size:24px; letter-spacing:-0.01em; margin:0 0 12px; }
   .wordmark span { color:var(--cyan); }
 
-  .navrow {
+  #site-nav {
     display:flex;
     gap:8px;
     margin:0 0 20px;
@@ -40,8 +40,8 @@
     scrollbar-width:none;
     padding-bottom:2px;
   }
-  .navrow::-webkit-scrollbar{ display:none; }
-  .navrow a {
+  #site-nav::-webkit-scrollbar{ display:none; }
+  .site-nav-link {
     flex:none;
     padding:7px 14px;
     border-radius:999px;
@@ -53,7 +53,7 @@
     text-decoration:none;
     white-space:nowrap;
   }
-  .navrow a.active { border-color:var(--cyan); color:var(--cyan); background:rgba(79,179,191,0.10); }
+  .site-nav-active { border-color:var(--cyan); color:var(--cyan); background:rgba(79,179,191,0.10); }
 
   .status-line{ font-size:11.5px; color:var(--text-muted); margin:0 0 16px; }
 
@@ -120,14 +120,9 @@
 <div class="wrap">
   <h1 class="wordmark">Command<span> Center</span></h1>
 
-  <div class="navrow">
-    <a href="/board">Command Center</a>
-    <a href="/opportunities">Opportunities Feed</a>
-    <a href="/inventors">Inventor Pool</a>
-    <a href="/roster">Inventor Roster</a>
-    <a href="/needs">Needs Attention</a>
-    <a href="/" class="active">Projects</a>
-  </div>
+  <div id="site-nav"></div>
+  <script src="/nav.js"></script>
+  <script>renderSiteNav('projects');</script>
 
   <p class="status-line" id="status-line">Loading live data…</p>
   <div class="grid" id="projects"></div>

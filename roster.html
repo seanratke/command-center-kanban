@@ -24,19 +24,15 @@
   .btn-primary { border: 1px solid #111827; background: white; color: #111827; }
   .btn-danger { border: 1px solid #d1d5db; background: white; color: #b91c1c; }
   .empty { color: #6b7280; font-style: italic; }
+  .site-nav-link { padding:8px 16px; border-radius:999px; background:#f3f4f6; border:2px solid #e5e7eb; color:#111827; font-size:13px; font-weight:600; text-decoration:none; }
+  .site-nav-active { border-color:#a21caf; color:#a21caf; }
 </style>
 </head>
 <body>
   <h1>Inventor Roster</h1>
-  <div style="display:flex;gap:10px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:#fff;">
-    <a href="/board" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Command Center</a>
-    <a href="/opportunities" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Opportunities Feed</a>
-    <a href="/inventors" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Inventor Pool</a>
-    <a href="/roster" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #a21caf;color:#a21caf;font-size:13px;font-weight:600;text-decoration:none;">Inventor Roster</a>
-  <a href="/needs" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #d97706;color:#d97706;font-size:13px;font-weight:600;text-decoration:none;">Needs Attention</a>
-  <a href="/projects" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Projects</a>
-  <a href="/" style="padding:8px 16px;border-radius:999px;background:#f3f4f6;border:2px solid #e5e7eb;color:#111827;font-size:13px;font-weight:600;text-decoration:none;">Home</a>
-  </div>
+  <div id="site-nav" style="display:flex;gap:10px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:#fff;"></div>
+  <script src="/nav.js"></script>
+  <script>renderSiteNav('roster');</script>
 
   <div class="add-form">
     <div class="section-title" style="border:none;margin:0 0 10px;">Add a new inventor</div>
