@@ -35,12 +35,15 @@
       "destination": "/needs.html"
     },
     {
-      "source": "/projects",
-      "destination": "/projects.html"
-    },
-    {
       "source": "/board",
       "destination": "/board.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/projects",
+      "destination": "/",
+      "permanent": true
     }
   ],
   "functions": {
