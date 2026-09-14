@@ -3,70 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Projects</title>
+<title>Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root{
-    --paper:#F6F5F1;
-    --ink:#25241F;
-    --ink-soft:#6E6C61;
-    --line:#DEDBD1;
-    --sage:#3F5B4C;
+  :root {
+    --cyan: #4FB3BF;
+    --amber: #D98E4F;
+    --text: #F3F5F7;
+    --text-muted: #A9B0BE;
+    --border: rgba(255,255,255,0.10);
+    --card: rgba(255,255,255,0.04);
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0;
-    background:var(--paper);
-    color:var(--ink);
-    font-family:'IBM Plex Sans', -apple-system, sans-serif;
+  * { box-sizing: border-box; min-width: 0; }
+  html, body { margin:0; background:#0E1116; overflow-x:hidden; }
+  body {
+    color: var(--text);
+    font-family:'Public Sans', sans-serif;
     -webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(ellipse 140% 60% at 50% 0%, #23305A 0%, #141A28 45%, #0E1116 100%);
+    min-height:100vh;
   }
-  .wrap{ max-width:640px; margin:0 auto; padding:40px 20px 80px; }
-  header{ margin-bottom:36px; }
-  header h1{ font-family:'Fraunces', serif; font-weight:500; font-size:32px; margin:0 0 8px; letter-spacing:-0.01em; }
-  header p{ margin:0; color:var(--ink-soft); font-size:15px; line-height:1.5; max-width:46ch; }
-  .status-line{ font-size:12.5px; color:var(--ink-soft); margin-top:14px; }
-  .project{ padding:22px 0; border-top:1px solid var(--line); }
-  .project:last-child{ border-bottom:1px solid var(--line); }
-  .project-head{ display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:6px; }
-  .project-name{ font-family:'Fraunces', serif; font-weight:500; font-size:19px; }
-  .project-status{ color:var(--ink-soft); font-size:14.5px; line-height:1.5; margin:0 0 14px; max-width:48ch; }
-  .rail{ display:flex; align-items:center; margin-bottom:16px; }
-  .rail-step{ display:flex; align-items:center; flex:1; }
-  .rail-dot{ width:9px; height:9px; border-radius:50%; background:var(--line); flex:none; position:relative; }
-  .rail-dot.done{ background:var(--sage); }
-  .rail-dot.current{ width:13px; height:13px; background:var(--paper); border:2.5px solid var(--sage); }
-  .rail-track{ flex:1; height:1px; background:var(--line); margin:0 4px; }
-  .rail-track.done{ background:var(--sage); }
-  .rail-labels{ display:flex; justify-content:space-between; margin-top:6px; margin-bottom:16px; }
-  .rail-labels span{ font-size:10.5px; color:var(--ink-soft); text-align:center; flex:1; }
-  .rail-labels span.current{ color:var(--ink); font-weight:600; }
-  .rail-labels span:first-child{ text-align:left; flex:0 0 auto; }
-  .rail-labels span:last-child{ text-align:right; flex:0 0 auto; }
-  .foot{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-  .next{ font-size:13.5px; color:var(--ink); }
-  .next b{ color:var(--sage); font-weight:600; }
-  .btn{ flex:none; display:inline-block; padding:8px 18px; border-radius:999px; border:1px solid var(--ink); color:var(--ink); text-decoration:none; font-size:13.5px; font-weight:500; background:transparent; transition:background .15s ease, color .15s ease; }
-  .btn:hover{ background:var(--ink); color:var(--paper); }
-  .btn.muted{ border-color:var(--line); color:var(--ink-soft); pointer-events:none; }
-  .tag{ font-size:11px; color:var(--ink-soft); border:1px solid var(--line); border-radius:999px; padding:2px 9px; white-space:nowrap; }
+  .wrap { max-width:1200px; margin:0 auto; padding:18px 16px 60px; }
+
+  .wordmark { font-family:'Archivo', sans-serif; font-weight:900; font-size:24px; letter-spacing:-0.01em; margin:0 0 12px; }
+  .wordmark span { color:var(--cyan); }
+
+  .navrow {
+    display:flex;
+    gap:8px;
+    margin:0 0 20px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+    padding-bottom:2px;
+  }
+  .navrow::-webkit-scrollbar{ display:none; }
+  .navrow a {
+    flex:none;
+    padding:7px 14px;
+    border-radius:999px;
+    background:rgba(255,255,255,0.05);
+    border:1.5px solid var(--border);
+    color:var(--text-muted);
+    font-size:12.5px;
+    font-weight:600;
+    text-decoration:none;
+    white-space:nowrap;
+  }
+  .navrow a.active { border-color:var(--cyan); color:var(--cyan); background:rgba(79,179,191,0.10); }
+
+  .status-line{ font-size:11.5px; color:var(--text-muted); margin:0 0 16px; }
+
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:400px){ .grid{ gap:8px; } }
+
+  .project {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    display:flex;
+    flex-direction:column;
+    backdrop-filter: blur(8px);
+  }
+  .project-head { display:flex; justify-content:space-between; align-items:flex-start; gap:6px; margin-bottom:7px; }
+  .project-name {
+    font-family:'Archivo', sans-serif;
+    font-weight:700;
+    font-size:15.5px;
+    line-height:1.25;
+    overflow-wrap:break-word;
+    word-break:break-word;
+  }
+  .tag { font-size:10px; color:var(--cyan); background:rgba(79,179,191,0.15); border-radius:6px; padding:2px 7px; white-space:nowrap; flex:none; }
+  .project-status {
+    color:var(--text-muted);
+    font-size:12px;
+    line-height:1.42;
+    margin:0 0 12px;
+    display:-webkit-box;
+    -webkit-line-clamp:3;
+    -webkit-box-orient:vertical;
+    overflow:hidden;
+  }
+
+  .rail { display:flex; align-items:center; margin-bottom:14px; }
+  .rail-step { display:flex; align-items:center; flex:1; }
+  .rail-dot { width:6px; height:6px; border-radius:50%; background:var(--border); flex:none; }
+  .rail-dot.done { background:var(--cyan); }
+  .rail-dot.current { width:9px; height:9px; background:transparent; border:2px solid var(--cyan); }
+  .rail-track { flex:1; height:1px; background:var(--border); margin:0 2px; }
+  .rail-track.done { background:var(--cyan); }
+
+  .foot { margin-top:auto; display:flex; flex-direction:column; gap:9px; }
+  .next { font-size:11.5px; color:var(--text-muted); line-height:1.4; }
+  .next b { color:var(--text); font-weight:600; }
+  .btn {
+    align-self:flex-start;
+    display:inline-block;
+    padding:6px 15px;
+    border-radius:999px;
+    border:1.5px solid var(--cyan);
+    color:var(--cyan);
+    text-decoration:none;
+    font-size:12px;
+    font-weight:600;
+    background:transparent;
+  }
+  .btn.muted { border-color:var(--border); color:var(--text-muted); pointer-events:none; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <h1>Projects</h1>
-    <p>Where each build actually stands, and the one thing that moves it forward.</p>
-    <div class="status-line" id="status-line">Loading live data…</div>
-  </header>
-  <div id="projects"></div>
+  <h1 class="wordmark">Command<span> Center</span></h1>
+
+  <div class="navrow">
+    <a href="/board">Command Center</a>
+    <a href="/opportunities">Opportunities Feed</a>
+    <a href="/inventors">Inventor Pool</a>
+    <a href="/roster">Inventor Roster</a>
+    <a href="/needs">Needs Attention</a>
+    <a href="/" class="active">Projects</a>
+  </div>
+
+  <p class="status-line" id="status-line">Loading live data…</p>
+  <div class="grid" id="projects"></div>
 </div>
 
 <script>
-  const SUPABASE_URL = 'https://yxfwduvwhruedjyrtfhx.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl4ZndkdXZ3aHJ1ZWRqeXJ0Zmh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0Mzg3OTIsImV4cCI6MjEwNDAxNDc5Mn0.g2hs-krdGWY1_H9I2KB12G8dN1fCUkuAsNdFh5ctXzE';
+  const sbClient = supabase.createClient(
+    'https://yxfwduvwhruedjyrtfhx.supabase.co',
+    'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy'
+  );
   const STAGES = ["Inbox","Lab","Validating","Building","Shipped"];
 
   function railHtml(currentIndex){
@@ -79,11 +150,7 @@
       }
       rail += `</div>`;
     });
-    let labels = "";
-    STAGES.forEach((s, i) => {
-      labels += `<span class="${i === currentIndex ? 'current' : ''}">${s}</span>`;
-    });
-    return `<div class="rail">${rail}</div><div class="rail-labels">${labels}</div>`;
+    return `<div class="rail">${rail}</div>`;
   }
 
   function projectHtml(p){
@@ -114,11 +181,7 @@
     const statusLine = document.getElementById('status-line');
     const container = document.getElementById('projects');
     try{
-      const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      const { data, error } = await client
-        .from('meta_projects')
-        .select('*')
-        .order('sort_order');
+      const { data, error } = await sbClient.from('meta_projects').select('*').order('sort_order');
       if(error) throw error;
       container.innerHTML = data.map(projectHtml).join("");
       statusLine.textContent = "Live from Command Center — " + new Date().toLocaleString();
@@ -126,7 +189,6 @@
       statusLine.textContent = "Couldn't load live data (" + (err.message || err) + ") — check connection.";
     }
   }
-
   load();
 </script>
 </body>
