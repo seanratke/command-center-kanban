@@ -64,7 +64,7 @@ async function runLabAssistant(anthropic: Anthropic, item: any, participationPat
   const message = await anthropic.messages.create({
     model: "claude-opus-5",
     max_tokens: 8000,
-    system: labPrompt,
+    system: [{ type: "text", text: labPrompt, cache_control: { type: "ephemeral" } }] as any,
     messages: [{ role: "user", content: userContent }],
   });
   const textBlock = message.content.find((b: any) => b.type === "text");
@@ -81,7 +81,7 @@ async function runPanel(anthropic: Anthropic, systemPrompt: string, userContent:
   const message = await anthropic.messages.create({
     model: "claude-opus-5",
     max_tokens: 8000,
-    system: systemPrompt,
+    system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }] as any,
     messages: [{ role: "user", content: userContent }],
   });
   const textBlock = message.content.find((b: any) => b.type === "text");

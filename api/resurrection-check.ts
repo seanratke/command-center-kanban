@@ -64,9 +64,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const userContent = `REJECTED IDEA: ${item.title}\nOriginal rejection reason: ${item.rejection_report?.main_reason || "unknown"}\nCONDITION TO RECHECK: ${reconsiderIf}\n\nRECENT MATERIAL FROM THE PAST WEEK:\n${materialBlock || "(none found)"}`;
 
         const message = await anthropic.messages.create({
-          model: "claude-opus-5",
+          model: "claude-sonnet-5",
           max_tokens: 2000,
-          system: systemPrompt,
+          system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }] as any,
           messages: [{ role: "user", content: userContent }],
         });
 

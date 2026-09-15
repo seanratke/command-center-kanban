@@ -19,9 +19,9 @@ async function runInventor(anthropic: Anthropic, systemPrompt: string, inventor:
   const userContent = `YOUR PERSONA:\nName: ${inventor.name}\nDomain: ${inventor.domain}\n${inventor.persona}\n\nTHIS WEEK'S RAW MATERIAL:\n${materialBlock}`;
 
   const message = await anthropic.messages.create({
-    model: "claude-opus-5",
+    model: "claude-sonnet-5",
     max_tokens: 8000,
-    system: systemPrompt,
+    system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }] as any,
     messages: [{ role: "user", content: userContent }],
   });
 

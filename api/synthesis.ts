@@ -84,7 +84,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const message = await anthropic.messages.create({
       model: "claude-opus-5",
       max_tokens: 6000,
-      system: systemPrompt,
+      system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }] as any,
       messages: [{ role: "user", content: `THIS WEEK'S FULL MATERIAL:\n${materialBlock || "(none found)"}` }],
     });
 

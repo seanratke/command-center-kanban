@@ -86,9 +86,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await setStep("Researching all boards (web search)");
 
     const message = await anthropic.messages.create({
-      model: "claude-opus-5",
+      model: "claude-sonnet-5",
       max_tokens: 32000,
-      system: systemPrompt,
+      system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }] as any,
       messages: [
         {
           role: "user",
