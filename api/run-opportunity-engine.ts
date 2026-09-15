@@ -104,10 +104,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const textBlocks = message.content.filter((b: any) => b.type === "text");
     if (textBlocks.length === 0) throw new Error("No text content returned from Claude");
-    const finalText = (textBlocks[textBlocks.length - 1] as any).text;
 
-    const parsed = extractJson(finalText);
-    if (!parsed.boards) throw new Error("Response JSON missing 'boards' object");
+    // With real web search, Claude can emit multiple text blocks (reasoning between
+    // searches, and sometimes a short trailing remark after the JSON despite
+    // instructions not to). Try blocks from last to first and use the first one that
+    // actually parses as JSON with a 'boards' object, instead of assuming the last
+    // block is always the real output.
+    let parsed: EngineResponse | null = null;
+    let lastParseError: any = null;
+    for (let i = textBlocks.length - 1; i >= 0; i--) {
+      try {
+        const candidate = extractJson((textBlocks[i] as any).text);
+        if (candidate && candidate.boards) {
+          parsed = candidate;
+          break;
+        }
+      } catch (e) {
+        lastParseError = e;
+      }
+    }
+    if (!parsed) {
+      throw new Error(
+        "Could not find a text block with valid JSON containing 'boards' (checked " +
+          textBlocks.length + " block(s)). Last parse error: " + (lastParseError?.message ?? String(lastParseError))
+      );
+    }
 
     await setStep("Saving results");
 
