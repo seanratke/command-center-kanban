@@ -17,9 +17,7 @@
     --sage: #3F5B4C;
     --sage-dim: #E4ECE7;
     --amber: #A97A34;
-    --amber-dim: #F6ECDD;
     --violet: #6B4FA0;
-    --violet-dim: #EFE9F7;
     --red: #B8453A;
   }
   * { box-sizing: border-box; min-width: 0; }
@@ -29,135 +27,130 @@
     font-family:'IBM Plex Sans', sans-serif;
     -webkit-font-smoothing:antialiased;
     min-height:100vh;
+    padding-bottom:70px;
   }
-  .wrap { max-width:1200px; margin:0 auto; padding:0 20px 60px; }
+  .wrap { max-width:520px; margin:0 auto; padding:20px 16px 20px; }
 
-  .hero { text-align:center; padding:48px 20px 24px; max-width:640px; margin:0 auto; }
-  .wordmark { font-family:'Fraunces', serif; font-weight:900; font-size:clamp(34px, 8vw, 46px); letter-spacing:-0.02em; line-height:1.02; margin:0 0 8px; }
-  .tagline-gradient {
-    font-family:'Fraunces', serif; font-weight:600; font-style:italic; font-size:clamp(15px, 3.5vw, 18px); margin:0;
-    background: linear-gradient(90deg, var(--sage), #6B8F7C 45%, var(--amber));
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-  }
+  .wordmark { font-family:'Fraunces', serif; font-weight:700; font-size:17px; text-align:center; margin:0 0 18px; }
 
-  /* THE BIG TOP FEED */
-  .action-section { max-width:680px; margin:0 auto 30px; }
-  .action-heading {
-    font-family:'Fraunces', serif; font-weight:700; font-size:20px;
-    text-align:center; margin:0 0 16px;
-  }
-  .action-row {
-    display:flex; align-items:flex-start; gap:14px;
-    background:var(--card); border:1px solid var(--border); border-radius:14px;
-    padding:16px; margin-bottom:10px;
-  }
-  .action-icon {
-    flex:none; width:44px; height:44px; border-radius:12px;
-    display:flex; align-items:center; justify-content:center;
-    color:#FFF;
-  }
-  .action-icon.pending { background:var(--violet); }
-  .action-icon.approval { background:var(--violet); }
-  .action-icon.urgent { background:var(--red); }
-  .action-icon svg { width:22px; height:22px; }
-  .action-body { flex:1; min-width:0; }
-  .action-headline { font-size:14.5px; font-weight:600; color:var(--ink); line-height:1.4; margin-bottom:4px; }
-  .action-headline b { color:inherit; }
-  .action-sub { font-size:12.5px; color:var(--ink-muted); line-height:1.5; margin-bottom:6px; }
-  .action-move { font-size:12px; color:var(--ink); }
-  .action-move b { color:var(--red); font-weight:600; }
-  .action-copy-btn {
-    display:inline-flex; align-items:center; gap:6px; margin-top:6px;
-    padding:6px 14px; border-radius:999px; border:1.5px solid var(--violet);
-    background:transparent; color:var(--violet); font-size:12px; font-weight:600;
-    cursor:pointer;
-  }
-  .action-empty {
-    text-align:center; font-size:13.5px; color:var(--ink-muted);
-    padding:20px 16px; border:1px solid var(--border); border-radius:14px; background:var(--card);
-  }
-
-  #site-nav { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:0 0 30px; }
-  .site-nav-link { padding:7px 14px; border-radius:999px; background:var(--card); border:1.5px solid var(--border); color:var(--ink-muted); font-size:12.5px; font-weight:600; text-decoration:none; }
-  .site-nav-active { border-color:var(--sage); color:var(--sage); background:var(--sage-dim); }
+  .shortcuts { display:flex; justify-content:space-between; margin-bottom:22px; }
+  .shortcut { text-align:center; width:70px; background:none; border:none; font-family:inherit; cursor:pointer; }
+  .shortcut-icon { width:48px; height:48px; border-radius:50%; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin:0 auto 4px; }
+  .shortcut-icon svg { width:20px; height:20px; }
+  .shortcut-label { font-size:10px; color:var(--ink-muted); }
 
   .section-label { font-size:10.5px; font-weight:600; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 10px; }
-  .section-label.secondary { margin-top:34px; }
 
-  .priority-card {
-    background:var(--card);
-    border:1px solid var(--border);
-    border-left:3px solid var(--accent-color, var(--sage));
-    border-radius:10px;
-    padding:12px 14px;
-    margin-bottom:8px;
-  }
-  .priority-card.watching { --accent-color: #4A6FA0; }
-  .priority-card.idea { --accent-color: var(--amber); }
-  .priority-title { font-family:'Fraunces', serif; font-weight:600; font-size:14px; margin-bottom:4px; }
-  .priority-reason { font-size:12px; color:var(--ink-muted); line-height:1.5; margin-bottom:4px; }
-  .priority-move { font-size:11.5px; color:var(--ink); }
-  .priority-move b { color:var(--accent-color, var(--sage)); font-weight:600; }
-  .priority-empty { font-size:12px; color:var(--ink-muted); font-style:italic; margin-bottom:20px; }
+  .carousel { display:flex; gap:10px; overflow-x:auto; margin:0 -16px 8px; padding:0 16px 4px; scroll-snap-type:x mandatory; }
+  .carousel::-webkit-scrollbar { display:none; }
+  .decision-card { flex:0 0 240px; scroll-snap-align:start; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; }
+  .decision-title { font-family:'Fraunces', serif; font-weight:600; font-size:13.5px; margin-bottom:4px; }
+  .decision-sub { font-size:11.5px; color:var(--ink-muted); line-height:1.45; margin-bottom:6px; }
+  .decision-move { font-size:11px; color:var(--ink); }
+  .decision-move b { color:var(--red); font-weight:600; }
+  .decision-copy { display:inline-flex; margin-top:6px; padding:5px 12px; border-radius:999px; border:1.5px solid var(--violet); background:transparent; color:var(--violet); font-size:11px; font-weight:600; cursor:pointer; }
+  .dots { display:flex; justify-content:center; gap:5px; margin:8px 0 24px; }
+  .dot { width:5px; height:5px; border-radius:50%; background:var(--border); }
+  .dot.active { background:var(--sage); }
+  .carousel-empty { text-align:center; font-size:12.5px; color:var(--ink-muted); padding:16px; border:1px solid var(--border); border-radius:14px; background:var(--card); margin-bottom:24px; }
 
-  .status-line{ text-align:center; font-size:11.5px; color:var(--ink-muted); margin:0 0 16px; }
+  .proj-row { display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:11px 13px; margin-bottom:7px; text-decoration:none; color:inherit; }
+  .proj-name { font-size:12.5px; font-weight:500; }
+  .proj-type { font-size:9.5px; color:var(--ink-muted); display:block; margin-top:1px; }
+  .proj-rail { display:flex; gap:3px; }
+  .proj-dot { width:5px; height:5px; border-radius:50%; background:var(--border); }
+  .proj-dot.on { background:var(--sage); }
+  .view-all { font-size:11px; color:var(--sage); font-weight:600; }
+  .row-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
 
-  .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-  @media (max-width:400px){ .grid{ gap:10px; } }
-  @media (min-width:900px){ .grid{ grid-template-columns:repeat(3, 1fr); gap:16px; } }
+  .idea-card { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--amber); border-radius:10px; padding:11px 13px; margin-bottom:7px; }
+  .idea-title { font-family:'Fraunces', serif; font-weight:600; font-size:13px; margin-bottom:3px; }
+  .idea-sub { font-size:11.5px; color:var(--ink-muted); line-height:1.45; }
+  .empty-note { font-size:12px; color:var(--ink-muted); font-style:italic; margin-bottom:20px; }
 
-  .project { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; display:flex; flex-direction:column; box-shadow: 0 1px 2px rgba(37,36,31,0.03); }
-  .project-head { display:flex; justify-content:space-between; align-items:flex-start; gap:6px; margin-bottom:10px; }
-  .project-name { font-family:'Fraunces', serif; font-weight:600; font-size:17px; line-height:1.3; overflow-wrap:break-word; word-break:normal; hyphens:auto; }
-  .tag { font-size:10px; color:var(--sage); background:var(--sage-dim); border-radius:6px; padding:3px 8px 3px 6px; white-space:nowrap; flex:none; display:inline-flex; align-items:center; gap:4px; }
-  .tag svg { width:9px; height:9px; flex:none; }
-  .output-type { font-size:10.5px; color:var(--ink-muted); border:1px solid var(--border); border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:12px; }
-  .project-status { color:var(--ink-muted); font-size:12.5px; line-height:1.55; margin:0 0 16px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .tabbar { position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--border); display:flex; justify-content:space-around; align-items:center; padding:8px 0 max(8px, env(safe-area-inset-bottom)); z-index:50; }
+  .tab { background:none; border:none; color:var(--ink-muted); display:flex; flex-direction:column; align-items:center; font-family:inherit; cursor:pointer; padding:4px; }
+  .tab svg { width:20px; height:20px; }
+  .tab.active { color:var(--sage); }
+  .tab-plus { width:38px; height:38px; border-radius:50%; background:var(--sage); display:flex; align-items:center; justify-content:center; margin-top:-16px; border:3px solid var(--paper); }
+  .tab-plus svg { width:18px; height:18px; }
 
-  .rail { display:flex; align-items:center; margin-bottom:16px; }
-  .rail-step { display:flex; align-items:center; flex:1; }
-  .rail-dot { width:6px; height:6px; border-radius:50%; background:var(--border); flex:none; }
-  .rail-dot.done { background:var(--sage); }
-  .rail-dot.current { width:9px; height:9px; background:var(--card); border:2px solid var(--sage); }
-  .rail-track { flex:1; height:1px; background:var(--border); margin:0 2px; }
-  .rail-track.done { background:var(--sage); }
-
-  .foot { margin-top:auto; display:flex; flex-direction:column; gap:10px; }
-  .next { font-size:11.5px; color:var(--ink-muted); line-height:1.45; }
-  .next b { color:var(--amber); font-weight:600; }
-  .btn { align-self:flex-start; display:inline-block; padding:6px 16px; border-radius:999px; border:1.5px solid var(--sage); color:var(--sage); text-decoration:none; font-size:12px; font-weight:600; background:transparent; }
-  .btn.muted { border-color:var(--border); color:var(--ink-muted); pointer-events:none; }
+  .capture-overlay { position:fixed; inset:0; background:rgba(37,36,31,0.4); display:none; align-items:flex-end; z-index:100; }
+  .capture-overlay.open { display:flex; }
+  .capture-sheet { background:var(--card); width:100%; border-radius:20px 20px 0 0; padding:20px; }
+  .capture-sheet h3 { font-family:'Fraunces', serif; font-size:16px; margin:0 0 10px; }
+  .capture-sheet textarea { width:100%; min-height:90px; border:1px solid var(--border); border-radius:10px; padding:10px; font-family:inherit; font-size:14px; resize:none; }
+  .capture-actions { display:flex; gap:8px; margin-top:10px; }
+  .capture-btn { flex:1; padding:10px; border-radius:999px; border:none; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  .capture-save { background:var(--sage); color:#FFF; }
+  .capture-cancel { background:var(--sage-dim); color:var(--sage); }
+  .capture-status { font-size:12px; color:var(--sage); margin-top:8px; min-height:16px; }
 </style>
 </head>
 <body>
 <div class="wrap">
+  <div class="wordmark">Command Center</div>
 
-  <div class="hero">
-    <h1 class="wordmark">Command Center</h1>
-    <p class="tagline-gradient">Every idea gets a home.</p>
+  <div class="shortcuts">
+    <a class="shortcut" href="#ideas" style="text-decoration:none;">
+      <div class="shortcut-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.3.25.5.65.5 1.1v.5h6v-.5c0-.45.2-.85.5-1.1A6 6 0 0012 3z" stroke="#A97A34" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="shortcut-label">Ideas</div>
+    </a>
+    <a class="shortcut" href="/opportunities" style="text-decoration:none;">
+      <div class="shortcut-icon"><svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#3F5B4C" stroke-width="1.8"/><path d="M20 20l-4-4" stroke="#3F5B4C" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <div class="shortcut-label">Opps</div>
+    </a>
+    <a class="shortcut" href="#projects" style="text-decoration:none;">
+      <div class="shortcut-icon"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="#3F5B4C" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="#3F5B4C" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="#3F5B4C" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="#3F5B4C" stroke-width="1.8"/></svg></div>
+      <div class="shortcut-label">Projects</div>
+    </a>
+    <a class="shortcut" href="/board" style="text-decoration:none;">
+      <div class="shortcut-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#B8453A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="shortcut-label">Review</div>
+    </a>
   </div>
 
-  <div class="action-section">
-    <div class="action-heading">What to do right now</div>
-    <div id="action-feed"><p class="action-empty">Loading…</p></div>
+  <div class="section-label" id="ideas">What to do right now</div>
+  <div id="carousel-wrap"><div class="carousel-empty">Loading…</div></div>
+
+  <div class="row-head" id="projects">
+    <div class="section-label" style="margin:0;">Projects</div>
+    <a class="view-all" href="/board">View all →</a>
   </div>
+  <div id="proj-list"><p class="empty-note">Loading…</p></div>
 
-  <div id="site-nav"></div>
-  <script src="/nav.js"></script>
-  <script>renderSiteNav('projects');</script>
+  <div class="section-label" style="margin-top:22px;">Ideas feed</div>
+  <div id="ideas-feed"><p class="empty-note">Loading…</p></div>
+</div>
 
-  <div class="section-label">Watching</div>
-  <div id="watching-list"><p class="priority-empty">Loading…</p></div>
+<div class="tabbar">
+  <button class="tab active" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <a class="tab" href="#ideas" style="text-decoration:none;">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.3.25.5.65.5 1.1v.5h6v-.5c0-.45.2-.85.5-1.1A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </a>
+  <button class="tab" onclick="openCapture()" aria-label="Quick capture">
+    <div class="tab-plus"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#FFF" stroke-width="2.3" stroke-linecap="round"/></svg></div>
+  </button>
+  <a class="tab" href="/opportunities" style="text-decoration:none;">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </a>
+  <a class="tab" href="/board" style="text-decoration:none;">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
+  </a>
+</div>
 
-  <div class="section-label">Ideas feed</div>
-  <div id="ideas-list"><p class="priority-empty">Loading…</p></div>
-
-  <p class="status-line" id="status-line">Loading live data…</p>
-  <div class="section-label">Your products</div>
-  <div class="grid" id="projects"></div>
-
-  <div class="section-label secondary">Internal tools</div>
-  <div class="grid" id="internal-projects"></div>
+<div class="capture-overlay" id="capture-overlay">
+  <div class="capture-sheet">
+    <h3>Quick capture</h3>
+    <textarea id="capture-text" placeholder="Type anything — it saves straight to your Inbox."></textarea>
+    <div class="capture-actions">
+      <button class="capture-btn capture-cancel" onclick="closeCapture()">Cancel</button>
+      <button class="capture-btn capture-save" onclick="saveCapture()">Save</button>
+    </div>
+    <div class="capture-status" id="capture-status"></div>
+  </div>
 </div>
 
 <script>
@@ -165,182 +158,98 @@
     'https://yxfwduvwhruedjyrtfhx.supabase.co',
     'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy'
   );
-  const STAGES = ["Inbox","Lab","Validating","Building","Shipped"];
 
-  const ICONS = {
-    pending: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    approval: '<svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
-    urgent: '<svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="white"/></svg>'
-  };
+  function openCapture(){ document.getElementById('capture-overlay').classList.add('open'); document.getElementById('capture-text').focus(); }
+  function closeCapture(){ document.getElementById('capture-overlay').classList.remove('open'); document.getElementById('capture-text').value=''; document.getElementById('capture-status').textContent=''; }
+
+  async function saveCapture(){
+    const text = document.getElementById('capture-text').value.trim();
+    const status = document.getElementById('capture-status');
+    if(!text){ status.textContent = 'Type something first.'; return; }
+    status.textContent = 'Saving…';
+    try{
+      const { error } = await sbClient.from('items').insert({ title: text, stage: 'inbox' });
+      if(error) throw error;
+      status.textContent = 'Saved to Inbox.';
+      setTimeout(closeCapture, 900);
+    } catch(err){
+      status.textContent = "Couldn't save — try again (" + (err.message || err) + ")";
+    }
+  }
 
   function escapeAttr(str){ return (str || "").replace(/"/g, "&quot;"); }
 
-  function actionRowHtml({iconType, headline, sub, move, copyText}){
+  function decisionCardHtml({title, sub, move, copyText}){
     const copyBtn = copyText
-      ? `<button class="action-copy-btn" onclick="navigator.clipboard.writeText(this.dataset.text); this.textContent='Copied';" data-text="${escapeAttr(copyText)}">Copy text to paste</button>`
+      ? `<button class="decision-copy" onclick="navigator.clipboard.writeText(this.dataset.text); this.textContent='Copied';" data-text="${escapeAttr(copyText)}">Copy to paste</button>`
       : "";
     return `
-      <div class="action-row">
-        <div class="action-icon ${iconType}">${ICONS[iconType]}</div>
-        <div class="action-body">
-          <div class="action-headline">${headline}</div>
-          ${sub ? `<div class="action-sub">${sub}</div>` : ""}
-          ${move ? `<div class="action-move">Next move: <b>${move}</b></div>` : ""}
-          ${copyBtn}
-        </div>
+      <div class="decision-card">
+        <div class="decision-title">${title}</div>
+        ${sub ? `<div class="decision-sub">${sub}</div>` : ""}
+        ${move ? `<div class="decision-move">Next: <b>${move}</b></div>` : ""}
+        ${copyBtn}
       </div>`;
   }
 
-  async function loadActionFeed(){
-    const el = document.getElementById('action-feed');
+  async function loadCarousel(){
+    const wrap = document.getElementById('carousel-wrap');
     try{
       const [pending, approval, urgent] = await Promise.all([
         sbClient.from('pending_actions').select('*').eq('status','open').order('created_at',{ascending:true}),
-        sbClient.from('items').select('title,approval_note').eq('awaiting_approval', true).order('updated_at',{ascending:false}),
-        sbClient.from('items').select('title,priority_reasoning,next_move,desk_research,build_recommendation')
-          .eq('priority_flag','act_now')
-          .order('updated_at',{ascending:false})
+        sbClient.from('items').select('title,approval_note').eq('awaiting_approval', true),
+        sbClient.from('items').select('title,priority_reasoning,next_move,desk_research,build_recommendation').eq('priority_flag','act_now')
       ]);
 
-      const rows = [];
+      const cards = [];
+      (pending.data || []).forEach(p => cards.push(decisionCardHtml({ title: p.instruction, copyText: p.paste_content || null })));
+      (approval.data || []).forEach(i => cards.push(decisionCardHtml({ title: `Decide: ${i.title}`, sub: i.approval_note })));
+      (urgent.data || []).filter(i => i.desk_research || i.build_recommendation).forEach(i =>
+        cards.push(decisionCardHtml({ title: `Decide: ${i.title}`, sub: i.priority_reasoning, move: i.next_move }))
+      );
 
-      (pending.data || []).forEach(p => {
-        rows.push(actionRowHtml({
-          iconType: 'pending',
-          headline: p.instruction,
-          sub: null,
-          copyText: p.paste_content || null
-        }));
-      });
-
-      (approval.data || []).forEach(i => {
-        rows.push(actionRowHtml({
-          iconType: 'approval',
-          headline: `Decide: <b>${i.title}</b>`,
-          sub: i.approval_note
-        }));
-      });
-
-      // Only "flushed out" ideas: has real research or a build recommendation behind it
-      (urgent.data || [])
-        .filter(i => i.desk_research || i.build_recommendation)
-        .forEach(i => {
-          rows.push(actionRowHtml({
-            iconType: 'urgent',
-            headline: `Decide: <b>${i.title}</b>`,
-            sub: i.priority_reasoning,
-            move: i.next_move
-          }));
-        });
-
-      el.innerHTML = rows.length ? rows.join("") : `<p class="action-empty">Nothing needs a decision right now.</p>`;
-    } catch(err){ el.innerHTML = `<p class="action-empty">Couldn't load.</p>`; }
-  }
-
-  function railHtml(currentIndex){
-    let rail = "";
-    STAGES.forEach((s, i) => {
-      const state = i < currentIndex ? "done" : (i === currentIndex ? "current" : "");
-      rail += `<div class="rail-step"><div class="rail-dot ${state}"></div>`;
-      if(i < STAGES.length - 1){ rail += `<div class="rail-track ${i < currentIndex ? "done" : ""}"></div>`; }
-      rail += `</div>`;
-    });
-    return `<div class="rail">${rail}</div>`;
-  }
-
-  const TAG_ICONS = {
-    'Live & working': '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="currentColor"/></svg>',
-    'Being built': '<svg viewBox="0 0 14 14"><path d="M7 1L13 7L7 13L1 7Z" fill="currentColor"/></svg>',
-    'Early research': '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
-    'Live, paused': '<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="10" fill="currentColor"/><rect x="8" y="2" width="3" height="10" fill="currentColor"/></svg>'
-  };
-  function tagIcon(tag){ return TAG_ICONS[tag] || ''; }
-
-  function projectHtml(p){
-    let btn;
-    if(p.url){ btn = `<a class="btn" href="${p.url}" target="_blank">Open</a>`; }
-    else if(p.slug === 'cannarecall'){ btn = `<a class="btn muted" href="#">Parked</a>`; }
-    else { btn = `<a class="btn muted" href="#">Not live yet</a>`; }
-    return `
-      <div class="project">
-        <div class="project-head">
-          <div class="project-name">${p.name}</div>
-          <div class="tag">${tagIcon(p.tag)}${p.tag}</div>
-        </div>
-        ${p.output_type ? `<div class="output-type">${p.output_type}</div>` : ""}
-        <p class="project-status">${p.summary || ""}</p>
-        ${railHtml(p.stage_index)}
-        <div class="foot">
-          <div class="next">Next: <b>${p.next_action || "—"}</b></div>
-          ${btn}
-        </div>
-      </div>`;
-  }
-
-  function priorityCardHtml(item, kind, reasonField, moveField){
-    return `
-      <div class="priority-card ${kind}">
-        <div class="priority-title">${item.title}</div>
-        <div class="priority-reason">${item[reasonField] || ""}</div>
-        ${moveField && item[moveField] ? `<div class="priority-move">Next move: <b>${item[moveField]}</b></div>` : ""}
-      </div>`;
-  }
-
-  async function loadWatching(){
-    const el = document.getElementById('watching-list');
-    try{
-      const { data, error } = await sbClient.from('items').select('title,priority_reasoning').eq('priority_flag','watch').order('updated_at',{ascending:false}).limit(5);
-      if(error) throw error;
-      el.innerHTML = (data && data.length) ? data.map(i => priorityCardHtml(i,'watching','priority_reasoning',null)).join("") : `<p class="priority-empty">Nothing on watch right now.</p>`;
-    } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
-  }
-
-  async function loadIdeas(){
-    const el = document.getElementById('ideas-list');
-    try{
-      const [inv, syn] = await Promise.all([
-        sbClient.from('inventor_ideas').select('title,priority_reasoning,next_move,created_at').eq('priority_flag','act_now'),
-        sbClient.from('synthesis_ideas').select('title,priority_reasoning,next_move,created_at').eq('priority_flag','act_now')
-      ]);
-      const combined = [...(inv.data||[]), ...(syn.data||[])].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,5);
-      el.innerHTML = combined.length ? combined.map(i => priorityCardHtml(i,'idea','priority_reasoning','next_move')).join("") : `<p class="priority-empty">Nothing flagged right now.</p>`;
-    } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
+      if(!cards.length){
+        wrap.innerHTML = `<div class="carousel-empty">Nothing needs a decision right now.</div>`;
+        return;
+      }
+      wrap.innerHTML = `<div class="carousel">${cards.join("")}</div><div class="dots">${cards.map((_,i)=>`<div class="dot${i===0?' active':''}"></div>`).join("")}</div>`;
+    } catch(err){ wrap.innerHTML = `<div class="carousel-empty">Couldn't load.</div>`; }
   }
 
   async function loadProjects(){
-    const statusLine = document.getElementById('status-line');
-    const container = document.getElementById('projects');
-    const internalContainer = document.getElementById('internal-projects');
+    const el = document.getElementById('proj-list');
     try{
-      const { data, error } = await sbClient.from('meta_projects').select('*').order('sort_order');
+      const { data, error } = await sbClient.from('meta_projects').select('*').order('sort_order').limit(6);
       if(error) throw error;
-
-      let labCount = null;
-      try{
-        const { count } = await sbClient.from('items').select('*', { count: 'exact', head: true }).eq('stage','lab');
-        labCount = count;
-      } catch(e){}
-
-      const withLive = data.map(p => {
-        if(p.slug === 'command-center' && labCount !== null){
-          return { ...p, next_action: labCount > 0 ? `Review ${labCount} item${labCount === 1 ? '' : 's'} waiting in Lab` : 'Lab is clear' };
-        }
-        return p;
-      });
-
-      const products = withLive.filter(p => p.category !== 'internal');
-      const internal = withLive.filter(p => p.category === 'internal');
-
-      container.innerHTML = products.map(projectHtml).join("");
-      internalContainer.innerHTML = internal.map(projectHtml).join("");
-      statusLine.textContent = "Live from Command Center — " + new Date().toLocaleString();
-    } catch(err){ statusLine.textContent = "Couldn't load live data (" + (err.message || err) + ")."; }
+      el.innerHTML = data.map(p => {
+        const dots = Array.from({length:5}, (_,i) => `<div class="proj-dot ${i < p.stage_index+1 ? 'on':''}"></div>`).join("");
+        const inner = `
+          <div><div class="proj-name">${p.name}</div><span class="proj-type">${p.output_type || ''}</span></div>
+          <div class="proj-rail">${dots}</div>`;
+        return p.url
+          ? `<a class="proj-row" href="${p.url}" target="_blank">${inner}</a>`
+          : `<div class="proj-row">${inner}</div>`;
+      }).join("");
+    } catch(err){ el.innerHTML = `<p class="empty-note">Couldn't load.</p>`; }
   }
 
-  loadActionFeed();
-  loadWatching();
-  loadIdeas();
+  async function loadIdeasFeed(){
+    const el = document.getElementById('ideas-feed');
+    try{
+      const [inv, syn] = await Promise.all([
+        sbClient.from('inventor_ideas').select('title,priority_reasoning,created_at').eq('priority_flag','act_now'),
+        sbClient.from('synthesis_ideas').select('title,priority_reasoning,created_at').eq('priority_flag','act_now')
+      ]);
+      const combined = [...(inv.data||[]), ...(syn.data||[])].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+      el.innerHTML = combined.length
+        ? combined.map(i => `<div class="idea-card"><div class="idea-title">${i.title}</div><div class="idea-sub">${i.priority_reasoning||''}</div></div>`).join("")
+        : `<p class="empty-note">Nothing flagged right now.</p>`;
+    } catch(err){ el.innerHTML = `<p class="empty-note">Couldn't load.</p>`; }
+  }
+
+  loadCarousel();
   loadProjects();
+  loadIdeasFeed();
 </script>
 </body>
 </html>
