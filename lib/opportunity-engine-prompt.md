@@ -30,11 +30,16 @@ For each surviving opportunity, write:
 a "key_summary": 2-4 plain-language sentences, written for a smart non-expert, explaining what it is and specifically why there's real market potential right now (who pays, why now, why defensible). No jargon. Stands alone.
 a "sean_fit": 2-3 plain-language sentences written directly to Sean, the person reading this. Cover: (a) what scale of effort this realistically needs — solo/small-team buildable vs. needs real capital or a team, (b) what domain or field this sits in, named plainly (e.g. "this is a materials science problem," "this is a social psychology / behavior-change problem," "this is a straightforward B2B software problem"), and (c) anything genuinely notable about why this particular opportunity might suit a technically-minded generalist builder working solo or with a small team, stated honestly — don't force a connection that isn't there. If (a) concludes this genuinely needs real capital or a team beyond Sean solo/small-team, sean_fit must ALSO name one specific way Sean could still be involved and paid without building the whole thing -- e.g. building a narrow wedge to sell or license, selling the research/diagnosis itself as a report or consulting engagement, building the supporting tool whoever wins this space will still need, or brokering/pitching it directly to named companies. Pick the one path that fits best and say what the real first move would be -- do not just say "too big" and stop there.
 a "research_grounding": 1-3 sentences citing the actual real source(s) you found via search that support this opportunity being real -- name the real publication, filing, pricing page, forum, or report, and what it actually said. This applies to every board, not just human_needs. Never fabricate a specific source or citation you did not actually find -- if search didn't turn up something specific enough to cite, say so plainly in this field ("no single citable source, but the pattern showed up across multiple general searches on X") rather than inventing one.
+WATCHLIST CHECK
+If ACTIVE WATCHLIST IDEAS are included in the day's input, this is a real step, not decoration -- actually check today's research against each one. For every watchlist idea, ask: does anything you found today (in any board, or in threads you investigated and discarded) genuinely bear on this idea -- a competitor move, a new data point, a regulatory change, evidence for or against its core premise? A topical or keyword-level resemblance does not count; it has to be the same underlying claim or bet. If something genuinely relevant turned up, add an entry to "watchlist_flags" naming the exact seed_idea_title (copy it verbatim from the input) and a specific note on what you found and why it matters. If nothing relevant turned up for a given watchlist idea today, say nothing about it -- do not force a flag just because a watchlist exists. Most days, watchlist_flags should be empty or absent entirely.
 Write the full report.
 OUTPUT — return ONLY valid JSON, no markdown fences, no commentary before or after, matching this shape:
 ```json
 {
   "today_signal": "1-2 sentences on what shifted / what's worth paying attention to today, across all boards",
+  "watchlist_flags": [
+    { "seed_idea_title": "copied verbatim from ACTIVE WATCHLIST IDEAS", "note": "what you found today and why it genuinely bears on this idea" }
+  ],
   "boards": {
     "main": [
       {
@@ -60,7 +65,7 @@ OUTPUT — return ONLY valid JSON, no markdown fences, no commentary before or a
   "raw_report_markdown": "the full human-readable version of everything above, with clear headers for each of the three boards"
 }
 ```
-Opportunities within each board array MUST be sorted by rank ascending (rank 1 first). Empty arrays are valid and expected on a weak day for that board — never force filler into far_out or canada_bc.
+Opportunities within each board array MUST be sorted by rank ascending (rank 1 first). Empty arrays are valid and expected on a weak day for that board — never force filler into far_out or canada_bc. "watchlist_flags" is only present when ACTIVE WATCHLIST IDEAS were included in the input AND today's research genuinely bore on one of them (see WATCHLIST CHECK below) -- omit entirely (or return an empty array) on an ordinary day with nothing to report.
 HUMAN NEEDS BOARD -- how to actually find these
 This board fails if you treat it like the other three. Main, far_out, and canada_bc work because they scan things that already leave a paper trail -- filings, pricing data, market reports. Human needs don't leave that trail. Nobody files a report titled "I am quietly struggling with X." You have to go find the unfiltered, first-person evidence of struggle directly, not infer it from industry data.
 
