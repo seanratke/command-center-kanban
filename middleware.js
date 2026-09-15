@@ -1,6 +1,6 @@
 import { next } from '@vercel/functions';
 
-export const config = { matcher: '/((?!api/login|login.html|_next|favicon.ico).*)' };
+export const config = { matcher: '/((?!api/login|api/run-opportunity-engine|api/inventor-pool|api/resurrection-check|api/synthesis|login.html|_next|favicon.ico).*)' };
 
 function getCookie(request, name) {
   const header = request.headers.get('cookie') || '';
