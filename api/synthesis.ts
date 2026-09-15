@@ -47,11 +47,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .gte("created_at", weekAgo)
       .limit(15);
 
+    const { data: seedIdeas } = await supabase
+      .from("seed_ideas")
+      .select("title, description")
+      .eq("status", "active")
+      .limit(15);
+
     const opBlock = (opportunities || []).map((o: any) => `[OPPORTUNITY, ${o.category}] ${o.title} -- ${o.key_summary || o.the_gap || ""}`).join("\n");
     const rejBlock = (rejectedItems || []).map((r: any) => `[REJECTED] ${r.title} -- reason: ${r.rejection_report?.main_reason || "unknown"}`).join("\n");
     const invBlock = (inventorIdeas || []).map((i: any) => `[INVENTOR IDEA] ${i.title} -- ${i.concept}`).join("\n");
+    const seedBlock = (seedIdeas || []).map((s: any) => `[SEED-IDEA WATCHLIST] ${s.title} -- ${s.description || ""}`).join("\n");
 
-    const materialBlock = `${opBlock}\n${rejBlock}\n${invBlock}`;
+    const materialBlock = `${opBlock}\n${rejBlock}\n${invBlock}\n${seedBlock}`;
 
     const message = await anthropic.messages.create({
       model: "claude-opus-5",
@@ -72,6 +79,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         mechanism: idea.mechanism,
         source_items: idea.source_items,
         idea_type: idea.idea_type === 'overlap' ? 'overlap' : 'combination',
+        priority_flag: idea.priority_flag || null,
+        priority_reasoning: idea.priority_reasoning || null,
+        next_move: idea.next_move || null,
       });
       saved++;
     }

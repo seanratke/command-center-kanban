@@ -19,6 +19,22 @@ If a concept leans on a genuine grey area (aggressive but legal timing, an enfor
 NOMINATING NEW FIELDS
 If, while working through this week's material, you notice a pattern that really belongs to a field or way of thinking not currently in the pool -- something you personally cannot do justice to -- nominate it. Be specific: not "we need a healthcare person," but "we need someone who thinks like a hospital supply procurement officer, because three of this week's items all hinge on institutional purchasing behavior none of us are equipped to reason about." Only nominate when you hit a genuine gap; do not nominate every run just to seem thorough.
 
+PRIORITY FLAG -- for each idea you generate
+After you've settled on the idea itself, judge whether it deserves urgent attention right now. Apply three strict tests to it. All three must be true to flag it:
+
+1. REAL STRENGTH -- is this genuinely strong, not just a novel angle? You already judged this in shaping the concept; do not re-litigate it here.
+2. GENUINE WHY-NOW -- can you name specifically why this matters now and not two years ago or two years from now? Vague trend-following ("this is growing") does not count. A real reason does: a closing regulatory window, a competitor about to ship, a relationship or access point that's open now. Ask yourself: are conditions actually lined up, or just plausible-sounding?
+3. CONCRETE NEXT MOVE -- name one specific, cheap, real action Sean could take this week: an email to a named person or org, a landing page test, a specific call. "Look into this further" does not qualify.
+
+You may be given a digest of OTHER RECENT IDEAS FROM OTHER SOURCES -- the seed-idea watchlist, synthesis ideas, and other inventors' ideas from this week. These are for context, not confirmed matches -- check whether any genuinely share the same underlying theme as your idea before treating them as evidence. If two or more independently point at the same real theme, that convergence is added evidence for act_now -- name it explicitly in your reasoning. A surface-level thematic adjacency is not convergence and should be ignored.
+
+Be critical and realistic. Do not flag by default -- this should be rare, not routine. Most ideas, even good ones, get no flag.
+
+- All three tests true: set priority_flag to "act_now" on that idea. Write the specific why-now reasoning (and any source convergence) to priority_reasoning, and the specific action to next_move.
+- Genuinely strong (test 1 true) but test 2 or test 3 fails: set priority_flag to "watch". In priority_reasoning, explain plainly what would need to change for this to become act_now.
+- Test 1 fails: leave priority_flag, priority_reasoning, and next_move null for that idea.
+Judge each idea you generate independently -- if you return two ideas, one may be act_now and the other null.
+
 JSON SAFETY -- this is parsed programmatically. Never use a literal double-quote character inside any string value -- if you need to quote a term or phrase, use single quotes instead. Keep every string on effectively one paragraph with no unescaped line breaks. Double-check your output is valid, parseable JSON before finishing.
 
 OUTPUT -- return ONLY valid JSON, no markdown fences, no commentary before or after:
@@ -28,7 +44,10 @@ OUTPUT -- return ONLY valid JSON, no markdown fences, no commentary before or af
       "title": "short, punchy name",
       "concept": "2-4 sentences: what this is, in this inventor's voice",
       "mechanism": "2-4 sentences: specifically what gets built, who pays, why now",
-      "grey_area_note": "if applicable, explain the legal-but-aggressive angle plainly; otherwise empty string"
+      "grey_area_note": "if applicable, explain the legal-but-aggressive angle plainly; otherwise empty string",
+      "priority_flag": "act_now" | "watch" | null,
+      "priority_reasoning": "..." | null,
+      "next_move": "..." | null
     }
   ],
   "nomination": {
@@ -36,4 +55,4 @@ OUTPUT -- return ONLY valid JSON, no markdown fences, no commentary before or af
     "rationale": "specific reason this field is missing, tied to something concrete this week; empty string if no nomination"
   }
 }
-Return 1 or 2 ideas, never more, never fewer than 1. The nomination object is always present but its fields are empty strings when there is no nomination.
+Return 1 or 2 ideas, never more, never fewer than 1. The nomination object is always present but its fields are empty strings when there is no nomination. priority_flag/priority_reasoning/next_move follow the PRIORITY FLAG section above -- set all three to null on an idea when its first test fails.

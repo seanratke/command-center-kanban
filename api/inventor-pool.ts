@@ -62,7 +62,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const rejBlock = (rejectedItems || [])
       .map((r: any) => `REJECTED: ${r.title} -- reason: ${r.rejection_report?.main_reason || "unknown"}; reconsider if: ${r.rejection_report?.reconsider_if || "unknown"}`)
       .join("\n");
-    const materialBlock = `OPPORTUNITIES FROM THE PAST WEEK:\n${opBlock || "(none found)"}\n\nRECENTLY REJECTED IDEAS:\n${rejBlock || "(none found)"}`;
+
+    const { data: seedIdeas } = await supabase
+      .from("seed_ideas")
+      .select("title, description")
+      .eq("status", "active")
+      .limit(10);
+    const { data: synthesisIdeas } = await supabase
+      .from("synthesis_ideas")
+      .select("title, concept")
+      .gte("created_at", weekAgo)
+      .limit(10);
+    const { data: otherInventorIdeas } = await supabase
+      .from("inventor_ideas")
+      .select("title, concept")
+      .gte("created_at", weekAgo)
+      .limit(10);
+
+    const seedBlock = (seedIdeas || []).map((s: any) => `[SEED-IDEA WATCHLIST] ${s.title} -- ${s.description || ""}`).join("\n");
+    const synthBlock = (synthesisIdeas || []).map((s: any) => `[SYNTHESIS IDEA] ${s.title} -- ${s.concept}`).join("\n");
+    const otherInvBlock = (otherInventorIdeas || []).map((i: any) => `[INVENTOR IDEA] ${i.title} -- ${i.concept}`).join("\n");
+    const otherSourcesDigest = `OTHER RECENT IDEAS FROM OTHER SOURCES (for the priority-flag convergence check -- not raw material to build from):\n${seedBlock || "(none)"}\n${synthBlock || "(none)"}\n${otherInvBlock || "(none)"}`;
+
+    const materialBlock = `OPPORTUNITIES FROM THE PAST WEEK:\n${opBlock || "(none found)"}\n\nRECENTLY REJECTED IDEAS:\n${rejBlock || "(none found)"}\n\n${otherSourcesDigest}`;
 
     const { data: activeInventors } = await supabase
       .from("inventors")
@@ -91,6 +113,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             mechanism: idea.mechanism,
             grey_area_note: idea.grey_area_note || null,
             source_context: materialBlock.slice(0, 2000),
+            priority_flag: idea.priority_flag || null,
+            priority_reasoning: idea.priority_reasoning || null,
+            next_move: idea.next_move || null,
           });
           totalIdeas++;
         }
