@@ -20,6 +20,7 @@
     --amber-dim: #F6ECDD;
     --violet: #6B4FA0;
     --violet-dim: #EFE9F7;
+    --red: #B8453A;
   }
   * { box-sizing: border-box; min-width: 0; }
   html, body { margin:0; background:var(--paper); overflow-x:hidden; }
@@ -31,35 +32,49 @@
   }
   .wrap { max-width:1200px; margin:0 auto; padding:0 20px 60px; }
 
-  .hero { text-align:center; padding:56px 20px 30px; max-width:640px; margin:0 auto; }
-  .wordmark { font-family:'Fraunces', serif; font-weight:900; font-size:clamp(38px, 9vw, 52px); letter-spacing:-0.02em; line-height:1.02; margin:0 0 10px; }
+  .hero { text-align:center; padding:48px 20px 24px; max-width:640px; margin:0 auto; }
+  .wordmark { font-family:'Fraunces', serif; font-weight:900; font-size:clamp(34px, 8vw, 46px); letter-spacing:-0.02em; line-height:1.02; margin:0 0 8px; }
   .tagline-gradient {
-    font-family:'Fraunces', serif; font-weight:600; font-style:italic; font-size:clamp(16px, 4vw, 19px); margin:0;
+    font-family:'Fraunces', serif; font-weight:600; font-style:italic; font-size:clamp(15px, 3.5vw, 18px); margin:0;
     background: linear-gradient(90deg, var(--sage), #6B8F7C 45%, var(--amber));
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
 
-  .turn-wrap { max-width:640px; margin:0 auto 30px; }
-  .turn-card {
-    background:var(--violet-dim);
-    border:1.5px solid var(--violet);
-    border-radius:12px;
-    padding:14px 16px;
-    margin-bottom:8px;
+  /* THE BIG TOP FEED */
+  .action-section { max-width:680px; margin:0 auto 30px; }
+  .action-heading {
+    font-family:'Fraunces', serif; font-weight:700; font-size:20px;
+    text-align:center; margin:0 0 16px;
   }
-  .turn-source { font-size:10px; font-weight:600; color:var(--violet); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px; }
-  .turn-instruction { font-size:13.5px; color:var(--ink); line-height:1.5; margin-bottom:8px; }
-  .turn-instruction b { color:var(--violet); }
-  .turn-copy-btn {
-    display:inline-flex; align-items:center; gap:6px;
+  .action-row {
+    display:flex; align-items:flex-start; gap:14px;
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:16px; margin-bottom:10px;
+  }
+  .action-icon {
+    flex:none; width:44px; height:44px; border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    color:#FFF;
+  }
+  .action-icon.pending { background:var(--violet); }
+  .action-icon.approval { background:var(--violet); }
+  .action-icon.urgent { background:var(--red); }
+  .action-icon svg { width:22px; height:22px; }
+  .action-body { flex:1; min-width:0; }
+  .action-headline { font-size:14.5px; font-weight:600; color:var(--ink); line-height:1.4; margin-bottom:4px; }
+  .action-headline b { color:inherit; }
+  .action-sub { font-size:12.5px; color:var(--ink-muted); line-height:1.5; margin-bottom:6px; }
+  .action-move { font-size:12px; color:var(--ink); }
+  .action-move b { color:var(--red); font-weight:600; }
+  .action-copy-btn {
+    display:inline-flex; align-items:center; gap:6px; margin-top:6px;
     padding:6px 14px; border-radius:999px; border:1.5px solid var(--violet);
-    background:var(--card); color:var(--violet); font-size:12px; font-weight:600;
+    background:transparent; color:var(--violet); font-size:12px; font-weight:600;
     cursor:pointer;
   }
-  .turn-copy-btn:active { transform: scale(0.98); }
-  .turn-empty {
-    text-align:center; font-size:13px; color:var(--ink-muted);
-    padding:14px 16px; border:1px solid var(--border); border-radius:12px; background:var(--card);
+  .action-empty {
+    text-align:center; font-size:13.5px; color:var(--ink-muted);
+    padding:20px 16px; border:1px solid var(--border); border-radius:14px; background:var(--card);
   }
 
   #site-nav { display:flex; flex-wrap:wrap; justify-content:center; gap:8px; margin:0 0 30px; }
@@ -77,8 +92,6 @@
     padding:12px 14px;
     margin-bottom:8px;
   }
-  .priority-card.approval { --accent-color: #6B4FA0; }
-  .priority-card.actnow { --accent-color: #A34A3F; }
   .priority-card.watching { --accent-color: #4A6FA0; }
   .priority-card.idea { --accent-color: var(--amber); }
   .priority-title { font-family:'Fraunces', serif; font-weight:600; font-size:14px; margin-bottom:4px; }
@@ -124,20 +137,14 @@
     <p class="tagline-gradient">Every idea gets a home.</p>
   </div>
 
-  <div class="turn-wrap">
-    <div class="section-label" style="text-align:center;">Your turn</div>
-    <div id="turn-list"><p class="turn-empty">Loading…</p></div>
+  <div class="action-section">
+    <div class="action-heading">What to do right now</div>
+    <div id="action-feed"><p class="action-empty">Loading…</p></div>
   </div>
 
   <div id="site-nav"></div>
   <script src="/nav.js"></script>
   <script>renderSiteNav('projects');</script>
-
-  <div class="section-label">Waiting on your approval</div>
-  <div id="approval-list"><p class="priority-empty">Loading…</p></div>
-
-  <div class="section-label">Act now</div>
-  <div id="actnow-list"><p class="priority-empty">Loading…</p></div>
 
   <div class="section-label">Watching</div>
   <div id="watching-list"><p class="priority-empty">Loading…</p></div>
@@ -159,6 +166,76 @@
     'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy'
   );
   const STAGES = ["Inbox","Lab","Validating","Building","Shipped"];
+
+  const ICONS = {
+    pending: '<svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    approval: '<svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="white" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+    urgent: '<svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="white"/></svg>'
+  };
+
+  function escapeAttr(str){ return (str || "").replace(/"/g, "&quot;"); }
+
+  function actionRowHtml({iconType, headline, sub, move, copyText}){
+    const copyBtn = copyText
+      ? `<button class="action-copy-btn" onclick="navigator.clipboard.writeText(this.dataset.text); this.textContent='Copied';" data-text="${escapeAttr(copyText)}">Copy text to paste</button>`
+      : "";
+    return `
+      <div class="action-row">
+        <div class="action-icon ${iconType}">${ICONS[iconType]}</div>
+        <div class="action-body">
+          <div class="action-headline">${headline}</div>
+          ${sub ? `<div class="action-sub">${sub}</div>` : ""}
+          ${move ? `<div class="action-move">Next move: <b>${move}</b></div>` : ""}
+          ${copyBtn}
+        </div>
+      </div>`;
+  }
+
+  async function loadActionFeed(){
+    const el = document.getElementById('action-feed');
+    try{
+      const [pending, approval, urgent] = await Promise.all([
+        sbClient.from('pending_actions').select('*').eq('status','open').order('created_at',{ascending:true}),
+        sbClient.from('items').select('title,approval_note').eq('awaiting_approval', true).order('updated_at',{ascending:false}),
+        sbClient.from('items').select('title,priority_reasoning,next_move,desk_research,build_recommendation')
+          .eq('priority_flag','act_now')
+          .order('updated_at',{ascending:false})
+      ]);
+
+      const rows = [];
+
+      (pending.data || []).forEach(p => {
+        rows.push(actionRowHtml({
+          iconType: 'pending',
+          headline: p.instruction,
+          sub: null,
+          copyText: p.paste_content || null
+        }));
+      });
+
+      (approval.data || []).forEach(i => {
+        rows.push(actionRowHtml({
+          iconType: 'approval',
+          headline: `Decide: <b>${i.title}</b>`,
+          sub: i.approval_note
+        }));
+      });
+
+      // Only "flushed out" ideas: has real research or a build recommendation behind it
+      (urgent.data || [])
+        .filter(i => i.desk_research || i.build_recommendation)
+        .forEach(i => {
+          rows.push(actionRowHtml({
+            iconType: 'urgent',
+            headline: `Decide: <b>${i.title}</b>`,
+            sub: i.priority_reasoning,
+            move: i.next_move
+          }));
+        });
+
+      el.innerHTML = rows.length ? rows.join("") : `<p class="action-empty">Nothing needs a decision right now.</p>`;
+    } catch(err){ el.innerHTML = `<p class="action-empty">Couldn't load.</p>`; }
+  }
 
   function railHtml(currentIndex){
     let rail = "";
@@ -207,52 +284,6 @@
         <div class="priority-reason">${item[reasonField] || ""}</div>
         ${moveField && item[moveField] ? `<div class="priority-move">Next move: <b>${item[moveField]}</b></div>` : ""}
       </div>`;
-  }
-
-  function escapeAttr(str){
-    return (str || "").replace(/"/g, "&quot;");
-  }
-
-  function turnCardHtml(action){
-    const sourceLabel = action.source === 'claude_code' ? 'Claude Code' : 'Chat';
-    const copyBtn = action.paste_content
-      ? `<button class="turn-copy-btn" onclick="navigator.clipboard.writeText(this.dataset.text); this.textContent='Copied';" data-text="${escapeAttr(action.paste_content)}">Copy text to paste</button>`
-      : "";
-    return `
-      <div class="turn-card">
-        <div class="turn-source">${sourceLabel}</div>
-        <div class="turn-instruction"><b>Sean:</b> ${action.instruction}</div>
-        ${copyBtn}
-      </div>`;
-  }
-
-  async function loadTurn(){
-    const el = document.getElementById('turn-list');
-    try{
-      const { data, error } = await sbClient.from('pending_actions').select('*').eq('status','open').order('created_at',{ascending:true});
-      if(error) throw error;
-      el.innerHTML = (data && data.length)
-        ? data.map(turnCardHtml).join("")
-        : `<p class="turn-empty">Nothing waiting on you right now — everything's either running on its own or caught up.</p>`;
-    } catch(err){ el.innerHTML = `<p class="turn-empty">Couldn't load.</p>`; }
-  }
-
-  async function loadApproval(){
-    const el = document.getElementById('approval-list');
-    try{
-      const { data, error } = await sbClient.from('items').select('title,approval_note').eq('awaiting_approval', true).order('updated_at',{ascending:false}).limit(5);
-      if(error) throw error;
-      el.innerHTML = (data && data.length) ? data.map(i => priorityCardHtml(i,'approval','approval_note',null)).join("") : `<p class="priority-empty">Nothing waiting on you.</p>`;
-    } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
-  }
-
-  async function loadActNow(){
-    const el = document.getElementById('actnow-list');
-    try{
-      const { data, error } = await sbClient.from('items').select('title,priority_reasoning,next_move').eq('priority_flag','act_now').order('updated_at',{ascending:false}).limit(5);
-      if(error) throw error;
-      el.innerHTML = (data && data.length) ? data.map(i => priorityCardHtml(i,'actnow','priority_reasoning','next_move')).join("") : `<p class="priority-empty">Nothing flagged right now.</p>`;
-    } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
   }
 
   async function loadWatching(){
@@ -306,9 +337,7 @@
     } catch(err){ statusLine.textContent = "Couldn't load live data (" + (err.message || err) + ")."; }
   }
 
-  loadTurn();
-  loadApproval();
-  loadActNow();
+  loadActionFeed();
   loadWatching();
   loadIdeas();
   loadProjects();
