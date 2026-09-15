@@ -49,9 +49,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: "unauthorized" });
   }
 
+  const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  let runId: string | null = null;
   try {
-    const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    const { data: runRow } = await supabase
+      .from("engine_runs")
+      .insert({ engine: "opportunities", status: "running", current_step: "Starting" })
+      .select("id")
+      .single();
+    runId = runRow?.id || null;
+  } catch (runErr) {
+    console.error("Failed to insert engine_runs row:", runErr);
+  }
 
+  async function setStep(step: string) {
+    if (!runId) return;
+    await supabase.from("engine_runs").update({ current_step: step }).eq("id", runId);
+  }
+
+  try {
     const { data: seedIdeas } = await supabase
       .from("seed_ideas")
       .select("id, title, description")
@@ -66,6 +82,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const systemPrompt = loadSystemPrompt();
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    await setStep("Researching all boards (web search)");
 
     const message = await anthropic.messages.create({
       model: "claude-opus-5",
@@ -90,6 +108,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const parsed = extractJson(finalText);
     if (!parsed.boards) throw new Error("Response JSON missing 'boards' object");
+
+    await setStep("Saving results");
 
     const today = new Date().toISOString().slice(0, 10);
     const boardNames: (keyof typeof parsed.boards)[] = ["main", "far_out", "canada_bc", "human_needs"];
@@ -139,6 +159,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    if (runId) {
+      await supabase.from("engine_runs").update({ status: "done", finished_at: new Date().toISOString() }).eq("id", runId);
+    }
+
     return res.status(200).json({
       success: true,
       inserted: rows.length,
@@ -147,6 +171,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (err: any) {
     console.error("Opportunity engine run failed:", err);
+    if (runId) {
+      try {
+        await supabase.from("engine_runs").update({
+          status: "failed",
+          error_message: err.message ?? String(err),
+          finished_at: new Date().toISOString(),
+        }).eq("id", runId);
+      } catch (updateErr) {
+        console.error("Failed to record engine_runs failure:", updateErr);
+      }
+    }
     return res.status(500).json({ success: false, error: err.message ?? String(err) });
   }
 }

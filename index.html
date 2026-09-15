@@ -33,6 +33,11 @@
 
   .wordmark { font-family:'Fraunces', serif; font-weight:700; font-size:17px; text-align:center; margin:0 0 18px; }
 
+  .engine-status { display:none; align-items:center; justify-content:center; gap:7px; text-align:center; font-size:11.5px; color:var(--ink-muted); margin:-8px 0 16px; }
+  .engine-status.show { display:flex; }
+  .engine-status-dot { width:6px; height:6px; border-radius:50%; background:var(--sage); flex:none; animation:engine-pulse 1.2s ease-in-out infinite; }
+  @keyframes engine-pulse { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+
   .shortcuts { display:flex; justify-content:space-between; margin-bottom:22px; }
   .shortcut { text-align:center; width:70px; background:none; border:none; font-family:inherit; cursor:pointer; }
   .shortcut-icon { width:48px; height:48px; border-radius:50%; background:var(--card); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; margin:0 auto 4px; }
@@ -90,6 +95,11 @@
 <body>
 <div class="wrap">
   <div class="wordmark">Command Center</div>
+
+  <div class="engine-status" id="engine-status">
+    <div class="engine-status-dot"></div>
+    <span id="engine-status-text"></span>
+  </div>
 
   <div class="shortcuts">
     <a class="shortcut" href="#ideas" style="text-decoration:none;">
@@ -247,9 +257,35 @@
     } catch(err){ el.innerHTML = `<p class="empty-note">Couldn't load.</p>`; }
   }
 
+  const ENGINE_LABELS = { opportunities: 'Opportunity Engine', inventor_pool: 'Inventor Pool', synthesis: 'Synthesis Engine' };
+  let engineStatusInterval = null;
+
+  async function checkEngineStatus(){
+    const wrap = document.getElementById('engine-status');
+    const text = document.getElementById('engine-status-text');
+    try{
+      const { data, error } = await sbClient.from('engine_runs').select('engine,status,current_step')
+        .eq('status','running').order('started_at',{ascending:false}).limit(1).maybeSingle();
+      if(error) throw error;
+      if(data){
+        const label = ENGINE_LABELS[data.engine] || data.engine;
+        text.textContent = data.current_step ? `${label} running — ${data.current_step}` : `${label} running`;
+        wrap.classList.add('show');
+        if(!engineStatusInterval){ engineStatusInterval = setInterval(checkEngineStatus, 15000); }
+      } else {
+        wrap.classList.remove('show');
+        if(engineStatusInterval){ clearInterval(engineStatusInterval); engineStatusInterval = null; }
+      }
+    } catch(err){
+      wrap.classList.remove('show');
+      if(engineStatusInterval){ clearInterval(engineStatusInterval); engineStatusInterval = null; }
+    }
+  }
+
   loadCarousel();
   loadProjects();
   loadIdeasFeed();
+  checkEngineStatus();
 </script>
 </body>
 </html>

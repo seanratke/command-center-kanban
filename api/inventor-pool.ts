@@ -36,10 +36,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: "unauthorized" });
   }
 
+  const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  let runId: string | null = null;
   try {
-    const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    const { data: runRow } = await supabase
+      .from("engine_runs")
+      .insert({ engine: "inventor_pool", status: "running", current_step: "Starting" })
+      .select("id")
+      .single();
+    runId = runRow?.id || null;
+  } catch (runErr) {
+    console.error("Failed to insert engine_runs row:", runErr);
+  }
+
+  async function setStep(step: string) {
+    if (!runId) return;
+    await supabase.from("engine_runs").update({ current_step: step }).eq("id", runId);
+  }
+
+  try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const systemPrompt = loadPrompt();
+
+    await setStep("Gathering this week's material");
 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -94,6 +113,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .limit(2);
 
     if (!activeInventors || activeInventors.length === 0) {
+      if (runId) {
+        await supabase.from("engine_runs").update({ status: "done", finished_at: new Date().toISOString() }).eq("id", runId);
+      }
       return res.status(200).json({ success: true, message: "No active inventors found", ideasGenerated: 0 });
     }
 
@@ -102,6 +124,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     for (const inventor of activeInventors) {
       try {
+        await setStep(`Running inventor: ${inventor.name}`);
         const result = await runInventor(anthropic, systemPrompt, inventor, materialBlock);
 
         const ideas = result.ideas || [];
@@ -141,9 +164,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    if (runId) {
+      await supabase.from("engine_runs").update({ status: "done", finished_at: new Date().toISOString() }).eq("id", runId);
+    }
+
     return res.status(200).json({ success: true, ideasGenerated: totalIdeas, results });
   } catch (err: any) {
     console.error("Inventor pool run failed:", err);
+    if (runId) {
+      try {
+        await supabase.from("engine_runs").update({
+          status: "failed",
+          error_message: err.message ?? String(err),
+          finished_at: new Date().toISOString(),
+        }).eq("id", runId);
+      } catch (updateErr) {
+        console.error("Failed to record engine_runs failure:", updateErr);
+      }
+    }
     return res.status(500).json({ success: false, error: err.message ?? String(err) });
   }
 }

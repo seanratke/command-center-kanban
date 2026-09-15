@@ -21,10 +21,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(401).json({ error: "unauthorized" });
   }
 
+  const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  let runId: string | null = null;
   try {
-    const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    const { data: runRow } = await supabase
+      .from("engine_runs")
+      .insert({ engine: "synthesis", status: "running", current_step: "Starting" })
+      .select("id")
+      .single();
+    runId = runRow?.id || null;
+  } catch (runErr) {
+    console.error("Failed to insert engine_runs row:", runErr);
+  }
+
+  async function setStep(step: string) {
+    if (!runId) return;
+    await supabase.from("engine_runs").update({ current_step: step }).eq("id", runId);
+  }
+
+  try {
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const systemPrompt = loadPrompt();
+
+    await setStep("Gathering this week's material");
 
     const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -60,6 +79,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const materialBlock = `${opBlock}\n${rejBlock}\n${invBlock}\n${seedBlock}`;
 
+    await setStep("Finding combinations and overlaps");
+
     const message = await anthropic.messages.create({
       model: "claude-opus-5",
       max_tokens: 6000,
@@ -70,6 +91,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const textBlock = message.content.find((b: any) => b.type === "text");
     if (!textBlock) throw new Error("No text content returned from Claude");
     const result = extractJson((textBlock as any).text);
+
+    await setStep("Saving results");
 
     let saved = 0;
     for (const idea of result.ideas || []) {
@@ -87,9 +110,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       saved++;
     }
 
+    if (runId) {
+      await supabase.from("engine_runs").update({ status: "done", finished_at: new Date().toISOString() }).eq("id", runId);
+    }
+
     return res.status(200).json({ success: true, ideasGenerated: saved });
   } catch (err: any) {
     console.error("Synthesis run failed:", err);
+    if (runId) {
+      try {
+        await supabase.from("engine_runs").update({
+          status: "failed",
+          error_message: err.message ?? String(err),
+          finished_at: new Date().toISOString(),
+        }).eq("id", runId);
+      } catch (updateErr) {
+        console.error("Failed to record engine_runs failure:", updateErr);
+      }
+    }
     return res.status(500).json({ success: false, error: err.message ?? String(err) });
   }
 }
