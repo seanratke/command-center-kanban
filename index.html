@@ -51,7 +51,8 @@
     padding:12px 14px;
     margin-bottom:8px;
   }
-  .priority-card.attention { --accent-color: #A34A3F; }
+  .priority-card.approval { --accent-color: #6B4FA0; }
+  .priority-card.actnow { --accent-color: #A34A3F; }
   .priority-card.idea { --accent-color: var(--amber); }
   .priority-title { font-family:'Fraunces', serif; font-weight:600; font-size:14px; margin-bottom:4px; }
   .priority-reason { font-size:12px; color:var(--ink-muted); line-height:1.5; margin-bottom:4px; }
@@ -63,10 +64,12 @@
 
   .grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
   @media (max-width:400px){ .grid{ gap:10px; } }
+  @media (min-width:820px){ .grid{ grid-template-columns:repeat(3, 1fr); } }
+  @media (min-width:1080px){ .grid{ grid-template-columns:repeat(4, 1fr); } }
 
   .project { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display:flex; flex-direction:column; box-shadow: 0 1px 2px rgba(37,36,31,0.03); }
   .project-head { display:flex; justify-content:space-between; align-items:flex-start; gap:6px; margin-bottom:8px; }
-  .project-name { font-family:'Fraunces', serif; font-weight:600; font-size:16.5px; line-height:1.25; overflow-wrap:break-word; word-break:break-word; }
+  .project-name { font-family:'Fraunces', serif; font-weight:600; font-size:16.5px; line-height:1.25; overflow-wrap:break-word; word-break:normal; hyphens:auto; }
   .tag { font-size:10px; color:var(--sage); background:var(--sage-dim); border-radius:6px; padding:2px 7px; white-space:nowrap; flex:none; }
   .project-status { color:var(--ink-muted); font-size:12px; line-height:1.5; margin:0 0 14px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 
@@ -97,8 +100,11 @@
   <script src="/nav.js"></script>
   <script>renderSiteNav('projects');</script>
 
-  <div class="section-label">Needs attention</div>
-  <div id="attention-list"><p class="priority-empty">Loading…</p></div>
+  <div class="section-label">Waiting on your approval</div>
+  <div id="approval-list"><p class="priority-empty">Loading…</p></div>
+
+  <div class="section-label">Act now</div>
+  <div id="actnow-list"><p class="priority-empty">Loading…</p></div>
 
   <div class="section-label">Ideas feed</div>
   <div id="ideas-list"><p class="priority-empty">Loading…</p></div>
@@ -146,21 +152,30 @@
       </div>`;
   }
 
-  function priorityCardHtml(item, kind){
+  function priorityCardHtml(item, kind, reasonField, moveField){
     return `
       <div class="priority-card ${kind}">
         <div class="priority-title">${item.title}</div>
-        <div class="priority-reason">${item.priority_reasoning || ""}</div>
-        ${item.next_move ? `<div class="priority-move">Next move: <b>${item.next_move}</b></div>` : ""}
+        <div class="priority-reason">${item[reasonField] || ""}</div>
+        ${item[moveField] ? `<div class="priority-move">Next move: <b>${item[moveField]}</b></div>` : ""}
       </div>`;
   }
 
-  async function loadAttention(){
-    const el = document.getElementById('attention-list');
+  async function loadApproval(){
+    const el = document.getElementById('approval-list');
+    try{
+      const { data, error } = await sbClient.from('items').select('title,approval_note').eq('awaiting_approval', true).order('updated_at',{ascending:false}).limit(5);
+      if(error) throw error;
+      el.innerHTML = (data && data.length) ? data.map(i => priorityCardHtml(i,'approval','approval_note',null)).join("") : `<p class="priority-empty">Nothing waiting on you.</p>`;
+    } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
+  }
+
+  async function loadActNow(){
+    const el = document.getElementById('actnow-list');
     try{
       const { data, error } = await sbClient.from('items').select('title,priority_reasoning,next_move').eq('priority_flag','act_now').order('updated_at',{ascending:false}).limit(5);
       if(error) throw error;
-      el.innerHTML = (data && data.length) ? data.map(i => priorityCardHtml(i,'attention')).join("") : `<p class="priority-empty">Nothing flagged right now.</p>`;
+      el.innerHTML = (data && data.length) ? data.map(i => priorityCardHtml(i,'actnow','priority_reasoning','next_move')).join("") : `<p class="priority-empty">Nothing flagged right now.</p>`;
     } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
   }
 
@@ -172,7 +187,7 @@
         sbClient.from('synthesis_ideas').select('title,priority_reasoning,next_move,created_at').eq('priority_flag','act_now')
       ]);
       const combined = [...(inv.data||[]), ...(syn.data||[])].sort((a,b) => new Date(b.created_at) - new Date(a.created_at)).slice(0,5);
-      el.innerHTML = combined.length ? combined.map(i => priorityCardHtml(i,'idea')).join("") : `<p class="priority-empty">Nothing flagged right now.</p>`;
+      el.innerHTML = combined.length ? combined.map(i => priorityCardHtml(i,'idea','priority_reasoning','next_move')).join("") : `<p class="priority-empty">Nothing flagged right now.</p>`;
     } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
   }
 
@@ -182,12 +197,27 @@
     try{
       const { data, error } = await sbClient.from('meta_projects').select('*').order('sort_order');
       if(error) throw error;
-      container.innerHTML = data.map(projectHtml).join("");
+
+      let labCount = null;
+      try{
+        const { count } = await sbClient.from('items').select('*', { count: 'exact', head: true }).eq('stage','lab');
+        labCount = count;
+      } catch(e){}
+
+      const withLive = data.map(p => {
+        if(p.slug === 'command-center' && labCount !== null){
+          return { ...p, next_action: labCount > 0 ? `Review ${labCount} item${labCount === 1 ? '' : 's'} waiting in Lab` : 'Lab is clear' };
+        }
+        return p;
+      });
+
+      container.innerHTML = withLive.map(projectHtml).join("");
       statusLine.textContent = "Live from Command Center — " + new Date().toLocaleString();
     } catch(err){ statusLine.textContent = "Couldn't load live data (" + (err.message || err) + ")."; }
   }
 
-  loadAttention();
+  loadApproval();
+  loadActNow();
   loadIdeas();
   loadProjects();
 </script>
