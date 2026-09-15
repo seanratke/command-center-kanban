@@ -54,6 +54,7 @@
   .priority-card.approval { --accent-color: #6B4FA0; }
   .priority-card.actnow { --accent-color: #A34A3F; }
   .priority-card.idea { --accent-color: var(--amber); }
+  .priority-card.watching { --accent-color: #5B7A99; }
   .priority-title { font-family:'Fraunces', serif; font-weight:600; font-size:14px; margin-bottom:4px; }
   .priority-reason { font-size:12px; color:var(--ink-muted); line-height:1.5; margin-bottom:4px; }
   .priority-move { font-size:11.5px; color:var(--ink); }
@@ -108,6 +109,9 @@
 
   <div class="section-label">Ideas feed</div>
   <div id="ideas-list"><p class="priority-empty">Loading…</p></div>
+
+  <div class="section-label">Watching</div>
+  <div id="watching-list"><p class="priority-empty">Loading…</p></div>
 
   <p class="status-line" id="status-line">Loading live data…</p>
   <div class="section-label">Projects</div>
@@ -173,9 +177,29 @@
   async function loadActNow(){
     const el = document.getElementById('actnow-list');
     try{
-      const { data, error } = await sbClient.from('items').select('title,priority_reasoning,next_move').eq('priority_flag','act_now').order('updated_at',{ascending:false}).limit(5);
+      // A rejected idea should never surface as act_now -- rejection means it isn't
+      // moving forward right now, regardless of how urgent the panel judged it.
+      const { data, error } = await sbClient.from('items').select('title,priority_reasoning,next_move').eq('priority_flag','act_now').neq('review_status','rejected').order('updated_at',{ascending:false}).limit(5);
       if(error) throw error;
       el.innerHTML = (data && data.length) ? data.map(i => priorityCardHtml(i,'actnow','priority_reasoning','next_move')).join("") : `<p class="priority-empty">Nothing flagged right now.</p>`;
+    } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
+  }
+
+  async function loadWatching(){
+    const el = document.getElementById('watching-list');
+    try{
+      const [items, inv, syn] = await Promise.all([
+        sbClient.from('items').select('title,priority_reasoning,next_move,updated_at').eq('priority_flag','watch'),
+        sbClient.from('inventor_ideas').select('title,priority_reasoning,next_move,created_at').eq('priority_flag','watch'),
+        sbClient.from('synthesis_ideas').select('title,priority_reasoning,next_move,created_at').eq('priority_flag','watch')
+      ]);
+      const withDates = [
+        ...(items.data||[]).map(i => ({...i, sortDate: i.updated_at})),
+        ...(inv.data||[]).map(i => ({...i, sortDate: i.created_at})),
+        ...(syn.data||[]).map(i => ({...i, sortDate: i.created_at}))
+      ];
+      const combined = withDates.sort((a,b) => new Date(b.sortDate) - new Date(a.sortDate)).slice(0,5);
+      el.innerHTML = combined.length ? combined.map(i => priorityCardHtml(i,'watching','priority_reasoning','next_move')).join("") : `<p class="priority-empty">Nothing being watched right now.</p>`;
     } catch(err){ el.innerHTML = `<p class="priority-empty">Couldn't load.</p>`; }
   }
 
@@ -219,6 +243,7 @@
   loadApproval();
   loadActNow();
   loadIdeas();
+  loadWatching();
   loadProjects();
 </script>
 </body>
