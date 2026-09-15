@@ -81,12 +81,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             "\n\nReturn ONLY the JSON object described in your instructions — no other text.",
         },
       ],
+      tools: [{ type: "web_search_20250305", name: "web_search" } as any],
     });
 
-    const textBlock = message.content.find((b: any) => b.type === "text");
-    if (!textBlock) throw new Error("No text content returned from Claude");
+    const textBlocks = message.content.filter((b: any) => b.type === "text");
+    if (textBlocks.length === 0) throw new Error("No text content returned from Claude");
+    const finalText = (textBlocks[textBlocks.length - 1] as any).text;
 
-    const parsed = extractJson((textBlock as any).text);
+    const parsed = extractJson(finalText);
     if (!parsed.boards) throw new Error("Response JSON missing 'boards' object");
 
     const today = new Date().toISOString().slice(0, 10);
