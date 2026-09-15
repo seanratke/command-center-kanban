@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<title>Opportunity Feed</title>
+<title>Opportunities Feed</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="manifest" href="/manifest.json" />
 <script>
@@ -65,16 +65,11 @@ if ("serviceWorker" in navigator) {
   .rail-dot.current { width:10px; height:10px; background:transparent; border:2px solid #4f46e5; }
   .rail-track { flex:1; height:1px; background:#e5e7eb; margin:0 3px; }
   .rail-track.done { background:#4f46e5; }
-  .site-nav-link { padding:8px 16px; border-radius:999px; background:#f3f4f6; border:2px solid #e5e7eb; color:#111827; font-size:13px; font-weight:600; text-decoration:none; }
-  .site-nav-active { border-color:#4f46e5; color:#4f46e5; }
 </style>
 </head>
 <body>
   <h1>Opportunity Feed</h1>
   <div id="status-rail"></div>
-  <div id="site-nav" style="display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:#fff;"></div>
-  <script src="/nav.js"></script>
-  <script>renderSiteNav('opportunities');</script>
   <div class="tabs">
     <button class="tab-btn active" data-filter="all" onclick="setFilter('all')">All</button>
     <button class="tab-btn" data-filter="main" onclick="setFilter('main')">Main</button>
@@ -346,5 +341,7 @@ function sparkHtml(op) {
 loadFeed();
 loadMetaStatus();
 </script>
+<script src="/tabbar.js"></script>
+<script>renderTabbar('opportunities');</script>
 </body>
 </html>

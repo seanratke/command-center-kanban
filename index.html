@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Command Center</title>
+<link rel="manifest" href="/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -73,23 +74,6 @@
   .idea-sub { font-size:11.5px; color:var(--ink-muted); line-height:1.45; }
   .empty-note { font-size:12px; color:var(--ink-muted); font-style:italic; margin-bottom:20px; }
 
-  .tabbar { position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--border); display:flex; justify-content:space-around; align-items:center; padding:8px 0 max(8px, env(safe-area-inset-bottom)); z-index:50; }
-  .tab { background:none; border:none; color:var(--ink-muted); display:flex; flex-direction:column; align-items:center; font-family:inherit; cursor:pointer; padding:4px; }
-  .tab svg { width:20px; height:20px; }
-  .tab.active { color:var(--sage); }
-  .tab-plus { width:38px; height:38px; border-radius:50%; background:var(--sage); display:flex; align-items:center; justify-content:center; margin-top:-16px; border:3px solid var(--paper); }
-  .tab-plus svg { width:18px; height:18px; }
-
-  .capture-overlay { position:fixed; inset:0; background:rgba(37,36,31,0.4); display:none; align-items:flex-end; z-index:100; }
-  .capture-overlay.open { display:flex; }
-  .capture-sheet { background:var(--card); width:100%; border-radius:20px 20px 0 0; padding:20px; }
-  .capture-sheet h3 { font-family:'Fraunces', serif; font-size:16px; margin:0 0 10px; }
-  .capture-sheet textarea { width:100%; min-height:90px; border:1px solid var(--border); border-radius:10px; padding:10px; font-family:inherit; font-size:14px; resize:none; }
-  .capture-actions { display:flex; gap:8px; margin-top:10px; }
-  .capture-btn { flex:1; padding:10px; border-radius:999px; border:none; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; }
-  .capture-save { background:var(--sage); color:#FFF; }
-  .capture-cancel { background:var(--sage-dim); color:var(--sage); }
-  .capture-status { font-size:12px; color:var(--sage); margin-top:8px; min-height:16px; }
 </style>
 </head>
 <body>
@@ -133,59 +117,11 @@
   <div id="ideas-feed"><p class="empty-note">Loading…</p></div>
 </div>
 
-<div class="tabbar">
-  <button class="tab active" onclick="window.scrollTo({top:0,behavior:'smooth'})">
-    <svg viewBox="0 0 24 24" fill="none"><path d="M3 11l9-8 9 8M5 10v10h14V10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </button>
-  <a class="tab" href="#ideas" style="text-decoration:none;">
-    <svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.5 10.9c.3.25.5.65.5 1.1v.5h6v-.5c0-.45.2-.85.5-1.1A6 6 0 0012 3z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-  </a>
-  <button class="tab" onclick="openCapture()" aria-label="Quick capture">
-    <div class="tab-plus"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#FFF" stroke-width="2.3" stroke-linecap="round"/></svg></div>
-  </button>
-  <a class="tab" href="/opportunities" style="text-decoration:none;">
-    <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"/><path d="M20 20l-4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-  </a>
-  <a class="tab" href="/board" style="text-decoration:none;">
-    <svg viewBox="0 0 24 24" fill="none"><circle cx="5" cy="12" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="19" cy="12" r="1.5" fill="currentColor"/></svg>
-  </a>
-</div>
-
-<div class="capture-overlay" id="capture-overlay">
-  <div class="capture-sheet">
-    <h3>Quick capture</h3>
-    <textarea id="capture-text" placeholder="Type anything — it saves straight to your Inbox."></textarea>
-    <div class="capture-actions">
-      <button class="capture-btn capture-cancel" onclick="closeCapture()">Cancel</button>
-      <button class="capture-btn capture-save" onclick="saveCapture()">Save</button>
-    </div>
-    <div class="capture-status" id="capture-status"></div>
-  </div>
-</div>
-
 <script>
   const sbClient = supabase.createClient(
     'https://yxfwduvwhruedjyrtfhx.supabase.co',
     'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy'
   );
-
-  function openCapture(){ document.getElementById('capture-overlay').classList.add('open'); document.getElementById('capture-text').focus(); }
-  function closeCapture(){ document.getElementById('capture-overlay').classList.remove('open'); document.getElementById('capture-text').value=''; document.getElementById('capture-status').textContent=''; }
-
-  async function saveCapture(){
-    const text = document.getElementById('capture-text').value.trim();
-    const status = document.getElementById('capture-status');
-    if(!text){ status.textContent = 'Type something first.'; return; }
-    status.textContent = 'Saving…';
-    try{
-      const { error } = await sbClient.from('items').insert({ title: text, stage: 'inbox' });
-      if(error) throw error;
-      status.textContent = 'Saved to Inbox.';
-      setTimeout(closeCapture, 900);
-    } catch(err){
-      status.textContent = "Couldn't save — try again (" + (err.message || err) + ")";
-    }
-  }
 
   function escapeAttr(str){ return (str || "").replace(/"/g, "&quot;"); }
 
@@ -287,5 +223,7 @@
   loadIdeasFeed();
   checkEngineStatus();
 </script>
+<script src="/tabbar.js"></script>
+<script>renderTabbar('home');</script>
 </body>
 </html>

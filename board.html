@@ -75,9 +75,6 @@ if ("serviceWorker" in navigator) {
   .rail-track { flex:1; height:1px; background:var(--border); margin:0 3px; }
   .rail-track.done { background:var(--sage); }
 
-  .site-nav-link { padding:8px 16px; border-radius:999px; background:var(--card); border:2px solid var(--border); color:var(--ink); font-size:13px; font-weight:600; text-decoration:none; }
-  .site-nav-active { border-color:var(--sage); color:var(--sage); background:var(--sage-dim); }
-
   .capture-row {
     margin: 18px 0 22px;
     display: flex;
@@ -377,7 +374,6 @@ if ("serviceWorker" in navigator) {
 <div class="wrap" id="app"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/nav.js"></script>
 <script>
 const SUPABASE_URL = 'https://yxfwduvwhruedjyrtfhx.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy';
@@ -1012,8 +1008,6 @@ function render() {
     app.appendChild(railWrap.firstElementChild);
   }
   app.appendChild(el('p', { class: 'tagline', text: 'Every idea gets a home. Nothing rots in silence.' }));
-  app.appendChild(el('div', { id: 'site-nav', style: 'display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:var(--paper);' }));
-  renderSiteNav('board');
 
   if (state.loadError) {
     app.appendChild(el('p', { style: 'color:#A34A3F;font-size:13px;margin:0 0 12px;', text: `Sync error: ${state.loadError}` }));
@@ -1061,5 +1055,7 @@ function renderBoardOnly() {
 loadItems();
 loadMetaStatus();
 </script>
+<script src="/tabbar.js"></script>
+<script>renderTabbar('board');</script>
 </body>
 </html>

@@ -3,8 +3,8 @@
   "short_name": "Cmd Center",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#14181F",
-  "theme_color": "#14181F",
+  "background_color": "#F6F5F1",
+  "theme_color": "#F6F5F1",
   "icons": [
     {
       "src": "/icon-192.png",

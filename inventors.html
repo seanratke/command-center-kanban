@@ -45,15 +45,10 @@
   .btn-discard { border: 1px solid var(--border); background: var(--card); color: var(--ink-muted); }
   .btn-approve { border: 1px solid var(--violet); background: var(--violet); color: #FFFFFF; }
   .empty { color: var(--ink-muted); font-style: italic; }
-  .site-nav-link { padding:8px 16px; border-radius:999px; background:var(--card); border:2px solid var(--border); color:var(--ink); font-size:13px; font-weight:600; text-decoration:none; }
-  .site-nav-active { border-color:var(--sage); color:var(--sage); background:var(--sage-dim); }
 </style>
 </head>
 <body>
   <h1>Inventor Pool</h1>
-  <div id="site-nav" style="display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:var(--paper);"></div>
-  <script src="/nav.js"></script>
-  <script>renderSiteNav('inventors');</script>
   <div id="content"><p class="empty">Loading...</p></div>
 
 <script>
@@ -229,5 +224,7 @@ async function approveNomination(id) {
 
 loadData();
 </script>
+<script src="/tabbar.js"></script>
+<script>renderTabbar('inventors');</script>
 </body>
 </html>

@@ -40,15 +40,10 @@
   .btn-primary { border: 1px solid var(--sage); background: var(--card); color: var(--sage); }
   .btn-danger { border: 1px solid var(--danger); background: var(--card); color: var(--danger); }
   .empty { color: var(--ink-muted); font-style: italic; }
-  .site-nav-link { padding:8px 16px; border-radius:999px; background:var(--card); border:2px solid var(--border); color:var(--ink); font-size:13px; font-weight:600; text-decoration:none; }
-  .site-nav-active { border-color:var(--sage); color:var(--sage); background:var(--sage-dim); }
 </style>
 </head>
 <body>
   <h1>Inventor Roster</h1>
-  <div id="site-nav" style="display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:var(--paper);"></div>
-  <script src="/nav.js"></script>
-  <script>renderSiteNav('roster');</script>
 
   <div class="add-form">
     <div class="section-title" style="border:none;margin:0 0 10px;">Add a new inventor</div>
@@ -166,5 +161,7 @@ function escapeHtml(str) {
 
 loadRoster();
 </script>
+<script src="/tabbar.js"></script>
+<script>renderTabbar('roster');</script>
 </body>
 </html>

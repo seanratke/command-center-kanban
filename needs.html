@@ -33,15 +33,10 @@
   .badge-synthesis { background: var(--border); color: var(--ink-muted); }
   a.view-link { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--sage); color: var(--sage); font-size: 0.8rem; text-decoration: none; white-space: nowrap; }
   .empty { color: var(--ink-muted); font-style: italic; }
-  .site-nav-link { padding:8px 16px; border-radius:999px; background:var(--card); border:2px solid var(--border); color:var(--ink); font-size:13px; font-weight:600; text-decoration:none; }
-  .site-nav-active { border-color:var(--sage); color:var(--sage); background:var(--sage-dim); }
 </style>
 </head>
 <body>
   <h1>Needs Attention</h1>
-  <div id="site-nav" style="display:flex;gap:8px;margin:0 0 24px;flex-wrap:wrap;position:sticky;top:0;z-index:100;padding:12px 0;background:var(--paper);"></div>
-  <script src="/nav.js"></script>
-  <script>renderSiteNav('needs');</script>
   <div id="content"><p class="empty">Loading...</p></div>
 
 <script>
@@ -98,5 +93,7 @@ function escapeHtml(str) {
 
 loadNeeds();
 </script>
+<script src="/tabbar.js"></script>
+<script>renderTabbar('needs');</script>
 </body>
 </html>
