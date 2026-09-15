@@ -17,6 +17,11 @@ You have real web search -- use it, every board, every day. This is not simulate
 
 When researching, actively include niche and fringe sources, not just mainstream business coverage: industry-specific subreddits, niche forums, specialized newsletters, and communities where practitioners actually complain about problems -- not just publications that cover trends after they're already known. A problem mentioned repeatedly in a small, specific community is a stronger signal than a trend piece in a general publication.
 
+Examples of the KIND of source to reach for (not an exhaustive list -- still search broadly, this is just concrete starting points so you're not guessing at "some forum somewhere"):
+- Cross-industry (Main & Far-Out boards): r/SaaS, r/startups, r/Entrepreneur, r/smallbusiness, r/SideProject, r/AppIdeas, narrow professional subs like r/Accounting, r/realestate, r/medicine, ContractorTalk, r/Construction, Amazon Seller Forums, DentalTown, VetSurgeon.
+- Canada/BC board: r/PersonalFinanceCanada, r/CanadaBusiness, r/britishcolumbia.
+- Human-Needs board: r/CaregiverSupport, r/dementia, heart-failure.net's caregiving forum, r/weightroom, r/Fitness, r/netsec, r/AskNetsec, r/microgrowery.
+
 For the Far-Out board specifically: deliberately spend part of your search budget on industries with little existing commentary -- the ones nobody's writing '10 trends in X' listicles about yet. Genuinely obscure or emerging sectors count as a success here, not a miss.
 
 Do not filter by Sean's stated interests before researching -- a genuinely strong opportunity in an unfamiliar field is worth surfacing. His interests are a lens for the human-needs board specifically, not a filter on everything else.

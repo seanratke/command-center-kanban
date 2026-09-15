@@ -54,6 +54,16 @@ The Opportunity Engine's Human Needs board narrows to one specific population pe
 - Brain function
 - Altered states of consciousness
 
+## Named community examples
+
+Added 2026-09-16 to `lib/opportunity-engine-prompt.md`'s niche/fringe-source instruction, as concrete starting points rather than a vague "search forums" directive. These are illustrative, not exhaustive -- the engine is still expected to search broadly and find sources beyond this list.
+
+**Cross-industry (Main & Far-Out boards):** r/SaaS, r/startups, r/Entrepreneur, r/smallbusiness, r/SideProject, r/AppIdeas, narrow professional subs like r/Accounting, r/realestate, r/medicine, ContractorTalk, r/Construction, Amazon Seller Forums, DentalTown, VetSurgeon.
+
+**Canada/BC board:** r/PersonalFinanceCanada, r/CanadaBusiness, r/britishcolumbia.
+
+**Human-Needs board:** r/CaregiverSupport, r/dementia, heart-failure.net's caregiving forum, r/weightroom, r/Fitness, r/netsec, r/AskNetsec, r/microgrowery.
+
 ## Real data sources the engine actually uses
 
 As of 2026-09-15, `api/run-opportunity-engine.ts` passes Anthropic's `web_search_20250305` tool to the model (the same real-search mechanism `api/lab-research.ts` already used), and the prompt (`lib/opportunity-engine-prompt.md`) instructs the model to actually search and cite what it finds rather than write as though it had. Verified with a real triggered run (manually invoked via `vercel crons run`, ~7.6 minutes, 9 opportunities across all four boards).
