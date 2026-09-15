@@ -28,6 +28,21 @@ STEP 4 -- DECISION
 "approved" -- idea should move to Lab. State the specific open question Lab needs to investigate first, not "do more research."
 "rejected" -- idea stays in Inbox. Include a full rejection_report (see schema): the single strongest reason stated plainly, secondary reasons, what would need to be true for this to become viable, and any internal dissent named explicitly.
 
+STEP 5 -- PRIORITY FLAG (only after status is "approved" or "rejected" -- skip entirely for "needs_input")
+Judge whether this idea deserves urgent attention right now, using three tests. All three must be true to flag it:
+
+1. REAL STRENGTH -- is this genuinely strong, not just novel? Your Step 1 debate already covers this; do not re-litigate it here.
+2. GENUINE WHY-NOW -- can you name specifically why this matters now and not two years ago or two years from now? Vague trend-following ("this is growing") does not count. A real reason does: a closing regulatory window, a competitor about to ship, a relationship or access point that's open now. Ask yourself: are conditions actually lined up, or just plausible-sounding?
+3. CONCRETE NEXT MOVE -- name one specific, cheap, real action Sean could take this week: an email to a named person or org, a landing page test, a specific call. "Look into this further" does not qualify.
+
+You may be given a list of POSSIBLY RELATED ENTRIES found by keyword match against other idea sources (opportunities, the seed-idea watchlist, inventor ideas, synthesis ideas). These are unverified candidates, not confirmed matches -- check whether they genuinely share the same underlying theme as this idea before treating them as evidence. If two or more independently point at the same real theme, that convergence is added evidence for act_now -- name it explicitly in your reasoning. A keyword match alone, on an unrelated theme, is not convergence and should be ignored.
+
+Be critical and realistic. Do not flag by default -- this should be rare, not routine. Most ideas, even good ones, get no flag.
+
+- All three tests true: set priority_flag to "act_now". Write the specific why-now reasoning (and any source convergence) to priority_reasoning, and the specific action to next_move.
+- Genuinely strong (test 1 true) but test 2 or test 3 fails: set priority_flag to "watch". In priority_reasoning, explain plainly what would need to change for this to become act_now. Do NOT let this pull your Step 4 decision toward rejection just because it isn't time-sensitive yet -- timing and buildability are separate questions.
+- Test 1 fails: leave priority_flag null, and leave priority_reasoning and next_move null. No other change in behavior.
+
 PATH TO PARTICIPATION -- required whenever this idea is too big to build solo
 "Too big for Sean to build alone" is never a reason to treat an idea as a dead end. A good idea has to start somewhere, and Sean does not need to build the whole thing to be part of the solution and get paid. Whenever your final decision (approved or rejected) concludes that this idea genuinely needs more than Sean solo or a small team -- real capital, a large team, deep industry relationships, regulatory standing, or years of runway -- you MUST propose a specific, named path for how Sean could still be involved and make money from it, short of building the whole thing himself.
 
@@ -53,6 +68,9 @@ OUTPUT -- return ONLY valid JSON, no markdown fences, no commentary before or af
   "questions": [ { "question": "...", "if_yes": "...", "if_no": "..." } ],
   "lab_focus": "...",
   "rejection_report": { "main_reason": "...", "secondary_reasons": ["..."], "reconsider_if": "...", "dissent": "..." },
-  "participation_path": { "model": "...", "first_move": "...", "rationale": "..." }
+  "participation_path": { "model": "...", "first_move": "...", "rationale": "..." },
+  "priority_flag": "act_now" | "watch" | null,
+  "priority_reasoning": "..." | null,
+  "next_move": "..." | null
 }
-"questions" only present when status is "needs_input". "lab_focus" only present when status is "approved". "rejection_report" only present when status is "rejected". "participation_path" only present when the idea needs more than solo/small-team execution -- omit entirely (or set to null) when it does not.
+"questions" only present when status is "needs_input". "lab_focus" only present when status is "approved". "rejection_report" only present when status is "rejected". "participation_path" only present when the idea needs more than solo/small-team execution -- omit entirely (or set to null) when it does not. "priority_flag"/"priority_reasoning"/"next_move" follow STEP 5 -- omit entirely (or set all three to null) when status is "needs_input", or when Step 5's first test fails.

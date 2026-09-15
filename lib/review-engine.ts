@@ -12,6 +12,51 @@ function loadLabPrompt(): string {
   return fs.readFileSync(path.join(process.cwd(), "lib", "lab-assistant-prompt.md"), "utf-8");
 }
 
+const STOPWORDS = new Set([
+  "this", "that", "with", "from", "into", "your", "about", "have", "will",
+  "which", "their", "there", "would", "could", "should", "been", "being",
+  "some", "more", "than", "what", "when", "where", "does", "just", "like",
+]);
+
+function keywordsFor(item: { title: string; tags?: string[] | null }): string[] {
+  const words = (item.title || "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length > 3 && !STOPWORDS.has(w));
+  const tags = (item.tags || []).map((t) => t.toLowerCase()).filter((t) => t.length > 2);
+  return Array.from(new Set([...words, ...tags])).slice(0, 8);
+}
+
+async function findRelatedAcrossSources(supabase: SupabaseClient, item: { title: string; tags?: string[] | null }): Promise<string> {
+  const keywords = keywordsFor(item);
+  if (keywords.length === 0) return "POSSIBLY RELATED ENTRIES FROM OTHER IDEA SOURCES: none found.";
+
+  const orFilter = keywords.map((w) => `title.ilike.%${w}%`).join(",");
+
+  const [opportunities, seedIdeas, inventorIdeas, synthesisIdeas] = await Promise.all([
+    supabase.from("opportunities").select("title,key_summary").or(orFilter).limit(5),
+    supabase.from("seed_ideas").select("title,description").or(orFilter).limit(5),
+    supabase.from("inventor_ideas").select("title,concept").or(orFilter).limit(5),
+    supabase.from("synthesis_ideas").select("title,concept").or(orFilter).limit(5),
+  ]);
+
+  const sections: string[] = [];
+  const fmt = (label: string, rows: any[] | null | undefined, fields: [string, string]) => {
+    if (!rows || rows.length === 0) return;
+    sections.push(
+      `${label}:\n` +
+        rows.map((r) => `- "${r[fields[0]]}" -- ${(r[fields[1]] || "").slice(0, 200)}`).join("\n")
+    );
+  };
+  fmt("Opportunities (keyword match, unverified)", opportunities.data, ["title", "key_summary"]);
+  fmt("Seed-idea watchlist (keyword match, unverified)", seedIdeas.data, ["title", "description"]);
+  fmt("Inventor ideas (keyword match, unverified)", inventorIdeas.data, ["title", "concept"]);
+  fmt("Synthesis ideas (keyword match, unverified)", synthesisIdeas.data, ["title", "concept"]);
+
+  if (sections.length === 0) return "POSSIBLY RELATED ENTRIES FROM OTHER IDEA SOURCES: none found.";
+  return "POSSIBLY RELATED ENTRIES FROM OTHER IDEA SOURCES (keyword match on title -- verify these are actually the same theme before treating as convergence):\n\n" + sections.join("\n\n");
+}
+
 async function runLabAssistant(anthropic: Anthropic, item: any, participationPath: any) {
   const labPrompt = loadLabPrompt();
   const userContent = `Title: ${item.title}\nNote: ${item.note || "(none)"}\n${participationPath ? `\nPARTICIPATION PATH FROM REVIEW PANEL (this idea was judged too big to build solo):\n${JSON.stringify(participationPath)}` : "\nNo participation path was flagged -- this idea was judged realistically solo/small-team buildable."}`;
@@ -57,7 +102,8 @@ export async function runReviewAction(
 
   try {
     if (action === "review") {
-      const userContent = `Title: ${item.title}\nNote: ${item.note || "(none)"}\nTags: ${(item.tags || []).join(", ") || "(none)"}`;
+      const relatedContext = await findRelatedAcrossSources(supabase, item);
+      const userContent = `Title: ${item.title}\nNote: ${item.note || "(none)"}\nTags: ${(item.tags || []).join(", ") || "(none)"}\n\n${relatedContext}`;
       const result = await runPanel(anthropic, systemPrompt, userContent);
 
       const update: any = {
@@ -78,6 +124,11 @@ export async function runReviewAction(
         }
       }
       if (result.participation_path) update.participation_path = result.participation_path;
+      if (result.status === "approved" || result.status === "rejected") {
+        update.priority_flag = result.priority_flag || null;
+        update.priority_reasoning = result.priority_reasoning || null;
+        update.next_move = result.next_move || null;
+      }
 
       const { error: updateError } = await supabase.from("items").update(update).eq("id", id);
       if (updateError) return { success: false, error: updateError.message, status: 500 };
@@ -86,7 +137,8 @@ export async function runReviewAction(
     }
 
     if (action === "answer") {
-      const userContent = `Title: ${item.title}\nNote: ${item.note || "(none)"}\nTags: ${(item.tags || []).join(", ") || "(none)"}\n\nEarlier questions:\n${JSON.stringify(item.review_questions)}\n\nSean's answers:\n${JSON.stringify(answers)}\n\nUse these answers to make a final decision now. Do not ask further questions unless truly necessary.`;
+      const relatedContext = await findRelatedAcrossSources(supabase, item);
+      const userContent = `Title: ${item.title}\nNote: ${item.note || "(none)"}\nTags: ${(item.tags || []).join(", ") || "(none)"}\n\nEarlier questions:\n${JSON.stringify(item.review_questions)}\n\nSean's answers:\n${JSON.stringify(answers)}\n\nUse these answers to make a final decision now. Do not ask further questions unless truly necessary.\n\n${relatedContext}`;
       const result = await runPanel(anthropic, systemPrompt, userContent);
 
       const update: any = {
@@ -96,6 +148,11 @@ export async function runReviewAction(
         reviewed_at: new Date().toISOString(),
       };
       if (result.status === "rejected") update.rejection_report = result.rejection_report || null;
+      if (result.status === "approved" || result.status === "rejected") {
+        update.priority_flag = result.priority_flag || null;
+        update.priority_reasoning = result.priority_reasoning || null;
+        update.next_move = result.next_move || null;
+      }
       if (result.status === "approved") {
         update.stage = "lab";
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
