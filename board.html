@@ -74,7 +74,6 @@ if ("serviceWorker" in navigator) {
   .rail-dot.current { width:10px; height:10px; background:transparent; border:2px solid var(--sage); }
   .rail-track { flex:1; height:1px; background:var(--border); margin:0 3px; }
   .rail-track.done { background:var(--sage); }
-  .rail-stage { font-size:10.5px; color:var(--sage); font-weight:600; }
 
   .site-nav-link { padding:8px 16px; border-radius:999px; background:var(--card); border:2px solid var(--border); color:var(--ink); font-size:13px; font-weight:600; text-decoration:none; }
   .site-nav-active { border-color:var(--sage); color:var(--sage); background:var(--sage-dim); }
@@ -407,7 +406,7 @@ function metaRailHtml(currentIndex){
     }
     rail += `</div>`;
   });
-  return `<div class="status-rail"><p class="status-rail-label">Command Center status</p><div class="rail">${rail}</div><div class="rail-stage">${META_STAGES[currentIndex]}</div></div>`;
+  return `<div class="status-rail"><p class="status-rail-label">Command Center status</p><div class="rail">${rail}</div></div>`;
 }
 
 async function loadMetaStatus() {

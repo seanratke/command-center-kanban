@@ -65,7 +65,6 @@ if ("serviceWorker" in navigator) {
   .rail-dot.current { width:10px; height:10px; background:transparent; border:2px solid #4f46e5; }
   .rail-track { flex:1; height:1px; background:#e5e7eb; margin:0 3px; }
   .rail-track.done { background:#4f46e5; }
-  .rail-stage { font-size:0.7rem; color:#4f46e5; font-weight:600; }
   .site-nav-link { padding:8px 16px; border-radius:999px; background:#f3f4f6; border:2px solid #e5e7eb; color:#111827; font-size:13px; font-weight:600; text-decoration:none; }
   .site-nav-active { border-color:#4f46e5; color:#4f46e5; }
 </style>
@@ -113,7 +112,7 @@ function metaRailHtml(currentIndex){
     }
     rail += `</div>`;
   });
-  return `<div class="status-rail"><p class="status-rail-label">Opportunities Engine status</p><div class="rail">${rail}</div><div class="rail-stage">${META_STAGES[currentIndex]}</div></div>`;
+  return `<div class="status-rail"><p class="status-rail-label">Opportunities Engine status</p><div class="rail">${rail}</div></div>`;
 }
 
 async function loadMetaStatus() {
