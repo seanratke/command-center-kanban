@@ -29,6 +29,7 @@ Rank survivors within EACH board 1 (best) through N by real market potential.
 For each surviving opportunity, write:
 a "key_summary": 2-4 plain-language sentences, written for a smart non-expert, explaining what it is and specifically why there's real market potential right now (who pays, why now, why defensible). No jargon. Stands alone.
 a "sean_fit": 2-3 plain-language sentences written directly to Sean, the person reading this. Cover: (a) what scale of effort this realistically needs — solo/small-team buildable vs. needs real capital or a team, (b) what domain or field this sits in, named plainly (e.g. "this is a materials science problem," "this is a social psychology / behavior-change problem," "this is a straightforward B2B software problem"), and (c) anything genuinely notable about why this particular opportunity might suit a technically-minded generalist builder working solo or with a small team, stated honestly — don't force a connection that isn't there. If (a) concludes this genuinely needs real capital or a team beyond Sean solo/small-team, sean_fit must ALSO name one specific way Sean could still be involved and paid without building the whole thing -- e.g. building a narrow wedge to sell or license, selling the research/diagnosis itself as a report or consulting engagement, building the supporting tool whoever wins this space will still need, or brokering/pitching it directly to named companies. Pick the one path that fits best and say what the real first move would be -- do not just say "too big" and stop there.
+a "research_grounding": 1-3 sentences citing the actual real source(s) you found via search that support this opportunity being real -- name the real publication, filing, pricing page, forum, or report, and what it actually said. This applies to every board, not just human_needs. Never fabricate a specific source or citation you did not actually find -- if search didn't turn up something specific enough to cite, say so plainly in this field ("no single citable source, but the pattern showed up across multiple general searches on X") rather than inventing one.
 Write the full report.
 OUTPUT — return ONLY valid JSON, no markdown fences, no commentary before or after, matching this shape:
 ```json
@@ -47,7 +48,8 @@ OUTPUT — return ONLY valid JSON, no markdown fences, no commentary before or a
         "what_to_build_first": "the smallest testable version",
         "why_others_missed_it": "specific reason",
         "confidence": "high | medium | speculative",
-        "is_top_recommendation": true or false (exactly one true across the ENTIRE report, on your single best idea across all three boards)
+        "is_top_recommendation": true or false (exactly one true across the ENTIRE report, on your single best idea across all three boards),
+        "research_grounding": "1-3 sentences citing the real source(s) found via search, naming the actual publication/filing/forum/site -- or an honest note that search didn't turn up something specific enough to cite"
       }
     ],
     "far_out": [ /* same shape as above */ ],
