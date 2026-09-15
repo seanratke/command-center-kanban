@@ -67,6 +67,7 @@
   .site-nav-active { border-color:var(--sage); color:var(--sage); background:var(--sage-dim); }
 
   .section-label { font-size:10.5px; font-weight:600; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 10px; }
+  .section-label.secondary { margin-top:34px; }
 
   .priority-card {
     background:var(--card);
@@ -96,7 +97,9 @@
   .project { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; display:flex; flex-direction:column; box-shadow: 0 1px 2px rgba(37,36,31,0.03); }
   .project-head { display:flex; justify-content:space-between; align-items:flex-start; gap:6px; margin-bottom:8px; }
   .project-name { font-family:'Fraunces', serif; font-weight:600; font-size:16.5px; line-height:1.25; overflow-wrap:break-word; word-break:normal; hyphens:auto; }
-  .tag { font-size:10px; color:var(--sage); background:var(--sage-dim); border-radius:6px; padding:2px 7px; white-space:nowrap; flex:none; }
+  .tag { font-size:10px; color:var(--sage); background:var(--sage-dim); border-radius:6px; padding:3px 8px 3px 6px; white-space:nowrap; flex:none; display:inline-flex; align-items:center; gap:4px; }
+  .tag svg { width:9px; height:9px; flex:none; }
+  .output-type { font-size:10.5px; color:var(--ink-muted); border:1px solid var(--border); border-radius:6px; padding:2px 7px; display:inline-block; margin-bottom:10px; }
   .project-status { color:var(--ink-muted); font-size:12px; line-height:1.5; margin:0 0 14px; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 
   .rail { display:flex; align-items:center; margin-bottom:16px; }
@@ -144,8 +147,11 @@
   <div id="ideas-list"><p class="priority-empty">Loading…</p></div>
 
   <p class="status-line" id="status-line">Loading live data…</p>
-  <div class="section-label">Projects</div>
+  <div class="section-label">Your products</div>
   <div class="grid" id="projects"></div>
+
+  <div class="section-label secondary">Internal tools</div>
+  <div class="grid" id="internal-projects"></div>
 </div>
 
 <script>
@@ -166,6 +172,14 @@
     return `<div class="rail">${rail}</div>`;
   }
 
+  const TAG_ICONS = {
+    'Live & working': '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="5" fill="currentColor"/></svg>',
+    'Being built': '<svg viewBox="0 0 14 14"><path d="M7 1L13 7L7 13L1 7Z" fill="currentColor"/></svg>',
+    'Early research': '<svg viewBox="0 0 14 14"><circle cx="7" cy="7" r="4.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
+    'Live, paused': '<svg viewBox="0 0 14 14"><rect x="3" y="2" width="3" height="10" fill="currentColor"/><rect x="8" y="2" width="3" height="10" fill="currentColor"/></svg>'
+  };
+  function tagIcon(tag){ return TAG_ICONS[tag] || ''; }
+
   function projectHtml(p){
     let btn;
     if(p.url){ btn = `<a class="btn" href="${p.url}" target="_blank">Open</a>`; }
@@ -175,8 +189,9 @@
       <div class="project">
         <div class="project-head">
           <div class="project-name">${p.name}</div>
-          <div class="tag">${p.tag}</div>
+          <div class="tag">${tagIcon(p.tag)}${p.tag}</div>
         </div>
+        ${p.output_type ? `<div class="output-type">${p.output_type}</div>` : ""}
         <p class="project-status">${p.summary || ""}</p>
         ${railHtml(p.stage_index)}
         <div class="foot">
@@ -265,6 +280,7 @@
   async function loadProjects(){
     const statusLine = document.getElementById('status-line');
     const container = document.getElementById('projects');
+    const internalContainer = document.getElementById('internal-projects');
     try{
       const { data, error } = await sbClient.from('meta_projects').select('*').order('sort_order');
       if(error) throw error;
@@ -282,7 +298,11 @@
         return p;
       });
 
-      container.innerHTML = withLive.map(projectHtml).join("");
+      const products = withLive.filter(p => p.category !== 'internal');
+      const internal = withLive.filter(p => p.category === 'internal');
+
+      container.innerHTML = products.map(projectHtml).join("");
+      internalContainer.innerHTML = internal.map(projectHtml).join("");
       statusLine.textContent = "Live from Command Center — " + new Date().toLocaleString();
     } catch(err){ statusLine.textContent = "Couldn't load live data (" + (err.message || err) + ")."; }
   }

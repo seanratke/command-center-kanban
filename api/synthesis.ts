@@ -79,6 +79,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         mechanism: idea.mechanism,
         source_items: idea.source_items,
         idea_type: idea.idea_type === 'overlap' ? 'overlap' : 'combination',
+        output_type: idea.output_type || null,
         priority_flag: idea.priority_flag || null,
         priority_reasoning: idea.priority_reasoning || null,
         next_move: idea.next_move || null,

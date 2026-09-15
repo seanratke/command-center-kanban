@@ -19,6 +19,9 @@ If a concept leans on a genuine grey area (aggressive but legal timing, an enfor
 NOMINATING NEW FIELDS
 If, while working through this week's material, you notice a pattern that really belongs to a field or way of thinking not currently in the pool -- something you personally cannot do justice to -- nominate it. Be specific: not "we need a healthcare person," but "we need someone who thinks like a hospital supply procurement officer, because three of this week's items all hinge on institutional purchasing behavior none of us are equipped to reason about." Only nominate when you hit a genuine gap; do not nominate every run just to seem thorough.
 
+OUTPUT TYPE -- for each idea you generate
+Set output_type to exactly one of: "Mobile app", "Web app", "Physical product", "Software tool", "Service", "Document / report", "Content / media", or "Not yet determined". Use "Not yet determined" honestly when it is genuinely too early to know -- do not force a guess just to fill the field.
+
 PRIORITY FLAG -- for each idea you generate
 After you've settled on the idea itself, judge whether it deserves urgent attention right now. Apply three strict tests to it. All three must be true to flag it:
 
@@ -45,6 +48,7 @@ OUTPUT -- return ONLY valid JSON, no markdown fences, no commentary before or af
       "concept": "2-4 sentences: what this is, in this inventor's voice",
       "mechanism": "2-4 sentences: specifically what gets built, who pays, why now",
       "grey_area_note": "if applicable, explain the legal-but-aggressive angle plainly; otherwise empty string",
+      "output_type": "Mobile app" | "Web app" | "Physical product" | "Software tool" | "Service" | "Document / report" | "Content / media" | "Not yet determined",
       "priority_flag": "act_now" | "watch" | null,
       "priority_reasoning": "..." | null,
       "next_move": "..." | null

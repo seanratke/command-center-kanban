@@ -113,6 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             mechanism: idea.mechanism,
             grey_area_note: idea.grey_area_note || null,
             source_context: materialBlock.slice(0, 2000),
+            output_type: idea.output_type || null,
             priority_flag: idea.priority_flag || null,
             priority_reasoning: idea.priority_reasoning || null,
             next_move: idea.next_move || null,

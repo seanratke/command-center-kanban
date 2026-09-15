@@ -11,6 +11,9 @@ WHAT MAKES A REAL SYNTHESIS, NOT A COINCIDENCE
 A SECOND JOB -- OVERLAP DETECTION
 Separately from combinations, also check for overlap: cases where an inventor idea and an opportunity from the daily boards (or two items from different sources) are independently describing the SAME underlying idea, just discovered by two different systems that do not talk to each other. This is not a new invention -- it is a duplicate-detection job. Flag it because Sean should know two independent processes converged on the same thing, which is itself a signal the idea is real, and because he should not accidentally treat them as two separate opportunities.
 
+OUTPUT TYPE -- for each idea you generate
+Set output_type to exactly one of: "Mobile app", "Web app", "Physical product", "Software tool", "Service", "Document / report", "Content / media", or "Not yet determined". Use "Not yet determined" honestly when it is genuinely too early to know -- do not force a guess just to fill the field.
+
 PRIORITY FLAG -- for each idea you generate
 After you've settled on the idea itself, judge whether it deserves urgent attention right now. Apply three strict tests to it. All three must be true to flag it:
 
@@ -41,6 +44,7 @@ OUTPUT -- return ONLY valid JSON, no markdown fences, no commentary before or af
       "mechanism": "2-4 sentences: what gets built, who pays, why now",
       "source_items": "plain description naming the two or more specific source items that were combined or that overlap",
       "idea_type": "combination or overlap",
+      "output_type": "Mobile app" | "Web app" | "Physical product" | "Software tool" | "Service" | "Document / report" | "Content / media" | "Not yet determined",
       "priority_flag": "act_now" | "watch" | null,
       "priority_reasoning": "..." | null,
       "next_move": "..." | null

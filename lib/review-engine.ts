@@ -118,6 +118,7 @@ export async function runReviewAction(
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
         try {
           update.build_recommendation = await runLabAssistant(anthropic, item, result.participation_path || null);
+          update.output_type = update.build_recommendation.output_type || null;
         } catch (labErr: any) {
           console.error("Lab assistant failed:", labErr);
           update.build_recommendation = { debug_error: labErr.message ?? String(labErr) };
@@ -158,6 +159,7 @@ export async function runReviewAction(
         update.note = (item.note || "") + `\n\nLab focus: ${result.lab_focus || ""}`;
         try {
           update.build_recommendation = await runLabAssistant(anthropic, item, result.participation_path || null);
+          update.output_type = update.build_recommendation.output_type || null;
         } catch (labErr: any) {
           console.error("Lab assistant failed:", labErr);
           update.build_recommendation = { debug_error: labErr.message ?? String(labErr) };
@@ -186,6 +188,7 @@ export async function runReviewAction(
 
       try {
         update.build_recommendation = await runLabAssistant(anthropic, item, item.participation_path || null);
+        update.output_type = update.build_recommendation.output_type || null;
       } catch (labErr: any) {
         console.error("Lab assistant failed:", labErr);
         update.build_recommendation = { debug_error: labErr.message ?? String(labErr) };

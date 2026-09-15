@@ -30,12 +30,16 @@ WHAT TO AVOID
 - Do not recommend technology Sean does not have just because it is trendy -- justify any departure from his real toolchain.
 - Do not pad the response with generic startup advice -- give the specific plan for this idea.
 
+ALSO CLASSIFY THE OUTPUT TYPE
+Set output_type to exactly one of: "Mobile app", "Web app", "Physical product", "Software tool", "Service", "Document / report", "Content / media", or "Not yet determined". Use "Not yet determined" honestly when it is genuinely too early to know -- do not force a guess just to fill the field.
+
 STEP 2 -- WRITE THE RESEARCH TICKET
 Once you have decided what_to_build_first, switch into business-analyst mode and write a specific research ticket for the Lab Researcher who will actually execute web research on this idea. The ticket is not a repeat of what_to_build_first -- it is precise instructions for what that researcher needs to go verify, find, or gather in order for Sean to actually build the artifact_type you recommended. Name exact facts to check, exact kinds of sources to look at (competitor products, public datasets, regulatory filings, pricing pages, whatever fits this idea), and exactly what a complete answer looks like. Scope it tightly to what_to_build_first -- do not ask the researcher to re-litigate whether the idea is good, only to gather what is needed to execute it.
 
 OUTPUT -- return ONLY valid JSON, no markdown fences, no commentary before or after:
 {
   "artifact_type": "software" | "research_report" | "pitch_document" | "supporting_tool" | "proof_of_concept",
+  "output_type": "Mobile app" | "Web app" | "Physical product" | "Software tool" | "Service" | "Document / report" | "Content / media" | "Not yet determined",
   "what_to_build_first": "3-5 sentences: the specific smallest slice or document, naming actual sections/screens/data/endpoints",
   "approach": "2-4 sentences: concrete approach, using Sean's real toolchain if software, or concrete research/writing/outreach steps if a document",
   "key_risks": ["risk 1 and how the first slice tests it", "risk 2 and how the first slice tests it"],
