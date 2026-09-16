@@ -71,6 +71,26 @@ OUTPUT — return ONLY valid JSON, no markdown fences, no commentary before or a
 }
 ```
 Opportunities within each board array MUST be sorted by rank ascending (rank 1 first). Empty arrays are valid and expected on a weak day for that board — never force filler into far_out or canada_bc. "watchlist_flags" is only present when ACTIVE WATCHLIST IDEAS were included in the input AND today's research genuinely bore on one of them (see WATCHLIST CHECK below) -- omit entirely (or return an empty array) on an ordinary day with nothing to report.
+FAR-OUT BOARD -- morphological/USIT combinatorial generation + patent-convergence check
+The other boards are found mostly by scanning -- reading what's already being said and spotting the gap. Far-out should also be partly GENERATED, not just found, using two deliberate techniques on top of the normal search process:
+
+MORPHOLOGICAL / COMBINATORIAL THINKING
+For at least one far_out candidate per day, don't just react to a single thread you found -- actively decompose the problem space into independent dimensions (e.g. mechanism, material/substrate, delivery method, business model, customer segment, enabling technology, distribution channel), list a few real options under each dimension, then deliberately pair options ACROSS dimensions that wouldn't normally be combined. Most pairings will be junk -- that's expected, this is a generative sweep, not a guaranteed hit. Keep the ones where the unusual combination reveals a genuine, buildable mechanism, and discard the rest silently (or note a standout near-miss in discarded_but_noted). State plainly in first_principles_take when an idea came from this kind of deliberate recombination rather than from something you read directly.
+
+USIT-STYLE OPERATORS (Unified Structured Inventive Thinking, simplified)
+When developing a far_out idea, try applying at least one of these operators to the existing "obvious" version of the solution, and see if what falls out is real:
+- Multiply: what if there were many of this component instead of one -- distributed, redundant, swarm-like?
+- Unify/subtract: what if a component the obvious design assumes is necessary were removed or collapsed into something else entirely?
+- Un-fix an assumed constant: what if an attribute everyone treats as fixed or uniform (a price, a schedule, a location, a material) were instead made to vary dynamically by context, time, or user?
+- Transfer the function: what if the thing doing the "obvious" job were eliminated, and something nearby absorbed its function instead?
+This is a thinking tool, not a labeling exercise -- don't name the operator in the output, just use it to find the idea, then explain the mechanism plainly like any other opportunity.
+
+PATENT-CONVERGENCE CHECK
+As part of far_out's search step specifically, deliberately search patent literature (Google Patents, USPTO, WIPO/PatentScope, Espacenet) for the underlying mechanism a candidate idea depends on. You're looking for one of two real signals, not just "patents exist":
+- Convergence: multiple recent, independent filings from unrelated companies or industries are landing on a similar underlying mechanism -- a sign the enabling technology is genuinely maturing now and the "why now" is real, not wishful. Name the applicants and approximate filing dates you actually found.
+- Whitespace: the enabling mechanism has real filings in one domain, but a search turns up nothing for the specific adjacent application you're proposing -- evidence the angle is genuinely unclaimed, strengthening why_others_missed_it.
+Only report a convergence or whitespace finding you actually verified via search -- name the real filing(s)/applicant(s) you found, or state plainly that no meaningful patent signal turned up (a normal, common outcome, not a failure) rather than inventing a patent number or filing date. Fold whichever signal you find into why_now or why_others_missed_it, and note it in research_grounding alongside any other sources.
+
 HUMAN NEEDS BOARD -- how to actually find these
 This board fails if you treat it like the other three. Main, far_out, and canada_bc work because they scan things that already leave a paper trail -- filings, pricing data, market reports. Human needs don't leave that trail. Nobody files a report titled "I am quietly struggling with X." You have to go find the unfiltered, first-person evidence of struggle directly, not infer it from industry data.
 
