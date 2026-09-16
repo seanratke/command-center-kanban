@@ -47,17 +47,22 @@
 
   .section-label { font-size:10.5px; font-weight:600; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 10px; }
 
-  .carousel { display:flex; gap:10px; overflow-x:auto; margin:0 -16px 8px; padding:0 16px 4px; scroll-snap-type:x mandatory; }
-  .carousel::-webkit-scrollbar { display:none; }
-  .decision-card { flex:0 0 240px; scroll-snap-align:start; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:14px; }
-  .decision-title { font-family:'Fraunces', serif; font-weight:600; font-size:13.5px; margin-bottom:4px; }
-  .decision-sub { font-size:11.5px; color:var(--ink-muted); line-height:1.45; margin-bottom:6px; }
-  .decision-move { font-size:11px; color:var(--ink); }
-  .decision-move b { color:var(--red); font-weight:600; }
-  .decision-copy { display:inline-flex; margin-top:6px; padding:5px 12px; border-radius:999px; border:1.5px solid var(--violet); background:transparent; color:var(--violet); font-size:11px; font-weight:600; cursor:pointer; }
-  .dots { display:flex; justify-content:center; gap:5px; margin:8px 0 24px; }
-  .dot { width:5px; height:5px; border-radius:50%; background:var(--border); }
-  .dot.active { background:var(--sage); }
+  .winners-list { margin-bottom:24px; }
+  .winner-card { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--red); border-radius:14px; padding:14px; margin-bottom:10px; }
+  .winner-card.tier-high { border-left-color:var(--amber); }
+  .winner-tier { display:inline-block; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; color:var(--red); margin-bottom:6px; }
+  .winner-card.tier-high .winner-tier { color:var(--amber); }
+  .winner-title { font-family:'Fraunces', serif; font-weight:600; font-size:14.5px; margin-bottom:6px; }
+  .winner-why { font-size:12px; color:var(--ink); line-height:1.5; margin-bottom:6px; }
+  .winner-why b { color:var(--ink-muted); font-weight:600; }
+  .winner-move { font-size:12px; color:var(--ink); line-height:1.5; margin-bottom:10px; }
+  .winner-move b { color:var(--sage); font-weight:600; }
+  .winner-actions { display:flex; gap:8px; }
+  .winner-btn { flex:1; padding:9px 0; border-radius:10px; font-size:12.5px; font-weight:600; font-family:inherit; cursor:pointer; text-align:center; }
+  .winner-btn-approve { border:none; background:var(--sage); color:#FFFFFF; }
+  .winner-btn-pass { border:1.5px solid var(--border); background:transparent; color:var(--ink-muted); }
+  .winner-btn:disabled { opacity:0.5; cursor:default; }
+  .winner-shipped { font-size:11.5px; color:var(--ink-muted); font-style:italic; }
   .carousel-empty { text-align:center; font-size:12.5px; color:var(--ink-muted); padding:16px; border:1px solid var(--border); border-radius:14px; background:var(--card); margin-bottom:24px; }
 
   .proj-row { display:flex; justify-content:space-between; align-items:center; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:11px 13px; margin-bottom:7px; text-decoration:none; color:inherit; }
@@ -69,9 +74,6 @@
   .view-all { font-size:11px; color:var(--sage); font-weight:600; }
   .row-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
 
-  .idea-card { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--amber); border-radius:10px; padding:11px 13px; margin-bottom:7px; }
-  .idea-title { font-family:'Fraunces', serif; font-weight:600; font-size:13px; margin-bottom:3px; }
-  .idea-sub { font-size:11.5px; color:var(--ink-muted); line-height:1.45; }
   .empty-note { font-size:12px; color:var(--ink-muted); font-style:italic; margin-bottom:20px; }
 
 </style>
@@ -105,61 +107,94 @@
   </div>
 
   <div class="section-label" id="ideas">What to do right now</div>
-  <div id="carousel-wrap"><div class="carousel-empty">Loading…</div></div>
+  <div id="winners-wrap"><div class="carousel-empty">Loading…</div></div>
 
   <div class="row-head" id="projects">
     <div class="section-label" style="margin:0;">Projects</div>
     <a class="view-all" href="/board">View all →</a>
   </div>
   <div id="proj-list"><p class="empty-note">Loading…</p></div>
-
-  <div class="section-label" style="margin-top:22px;">Ideas feed</div>
-  <div id="ideas-feed"><p class="empty-note">Loading…</p></div>
 </div>
 
+<script src="/item-actions.js"></script>
 <script>
   const sbClient = supabase.createClient(
     'https://yxfwduvwhruedjyrtfhx.supabase.co',
     'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy'
   );
 
-  function escapeAttr(str){ return (str || "").replace(/"/g, "&quot;"); }
+  const TIER_LABELS = { critical: 'Critical -- act today', high: 'High -- act soon' };
+  const TIER_RANK = { critical: 0, high: 1 };
 
-  function decisionCardHtml({title, sub, move, copyText}){
-    const copyBtn = copyText
-      ? `<button class="decision-copy" onclick="navigator.clipboard.writeText(this.dataset.text); this.textContent='Copied';" data-text="${escapeAttr(copyText)}">Copy to paste</button>`
-      : "";
+  function winnerCardHtml(item){
+    const tierClass = item.priority_tier === 'high' ? 'tier-high' : '';
+    const tierLabel = TIER_LABELS[item.priority_tier] || 'Flagged act now';
+    const actions = item.stage === 'shipped'
+      ? `<div class="winner-shipped">Already shipped -- nothing left to decide.</div>`
+      : `<div class="winner-actions">
+          <button class="winner-btn winner-btn-approve" onclick="approveWinner('${item.id}', this)">Approve</button>
+          <button class="winner-btn winner-btn-pass" onclick="passWinner('${item.id}', this)">Pass</button>
+        </div>`;
     return `
-      <div class="decision-card">
-        <div class="decision-title">${title}</div>
-        ${sub ? `<div class="decision-sub">${sub}</div>` : ""}
-        ${move ? `<div class="decision-move">Next: <b>${move}</b></div>` : ""}
-        ${copyBtn}
+      <div class="winner-card ${tierClass}" id="winner-${item.id}" data-stage="${item.stage}">
+        <div class="winner-tier">${tierLabel}</div>
+        <div class="winner-title">${item.title}</div>
+        ${item.priority_reasoning ? `<div class="winner-why"><b>Why now:</b> ${item.priority_reasoning}</div>` : ""}
+        ${item.next_move ? `<div class="winner-move"><b>Next move:</b> ${item.next_move}</div>` : ""}
+        ${actions}
       </div>`;
   }
 
-  async function loadCarousel(){
-    const wrap = document.getElementById('carousel-wrap');
+  async function loadWinners(){
+    const wrap = document.getElementById('winners-wrap');
     try{
-      const [pending, approval, urgent] = await Promise.all([
-        sbClient.from('pending_actions').select('*').eq('status','open').order('created_at',{ascending:true}),
-        sbClient.from('items').select('title,approval_note').eq('awaiting_approval', true),
-        sbClient.from('items').select('title,priority_reasoning,next_move,desk_research,build_recommendation').eq('priority_flag','act_now')
-      ]);
+      // Winners: survived panel review (stage left 'inbox') and are still a live
+      // decision (not 'killed') -- not just self-flagged and sitting uncaptured.
+      const { data, error } = await sbClient.from('items')
+        .select('id,title,priority_reasoning,next_move,priority_tier,stage,updated_at')
+        .eq('priority_flag','act_now')
+        .neq('stage','inbox')
+        .neq('stage','killed');
+      if(error) throw error;
 
-      const cards = [];
-      (pending.data || []).forEach(p => cards.push(decisionCardHtml({ title: p.instruction, copyText: p.paste_content || null })));
-      (approval.data || []).forEach(i => cards.push(decisionCardHtml({ title: `Decide: ${i.title}`, sub: i.approval_note })));
-      (urgent.data || []).filter(i => i.desk_research || i.build_recommendation).forEach(i =>
-        cards.push(decisionCardHtml({ title: `Decide: ${i.title}`, sub: i.priority_reasoning, move: i.next_move }))
-      );
+      const winners = (data || []).sort((a,b) => {
+        const ta = TIER_RANK[a.priority_tier] ?? 2;
+        const tb = TIER_RANK[b.priority_tier] ?? 2;
+        if(ta !== tb) return ta - tb;
+        return new Date(b.updated_at) - new Date(a.updated_at);
+      });
 
-      if(!cards.length){
-        wrap.innerHTML = `<div class="carousel-empty">Nothing needs a decision right now.</div>`;
-        return;
-      }
-      wrap.innerHTML = `<div class="carousel">${cards.join("")}</div><div class="dots">${cards.map((_,i)=>`<div class="dot${i===0?' active':''}"></div>`).join("")}</div>`;
+      wrap.innerHTML = winners.length
+        ? `<div class="winners-list">${winners.map(winnerCardHtml).join("")}</div>`
+        : `<div class="carousel-empty">Nothing's cleared the bar yet today.</div>`;
     } catch(err){ wrap.innerHTML = `<div class="carousel-empty">Couldn't load.</div>`; }
+  }
+
+  async function approveWinner(id, btn){
+    btn.closest('.winner-actions').querySelectorAll('button').forEach(b => b.disabled = true);
+    const cardEl = document.getElementById(`winner-${id}`);
+    const currentStage = cardEl ? cardEl.dataset.stage : null;
+    const result = await advanceItemStage(sbClient, id, currentStage);
+    if(result.error){ console.error('approve failed', result.error); btn.closest('.winner-actions').querySelectorAll('button').forEach(b => b.disabled = false); return; }
+    if(cardEl) cardEl.remove();
+    checkWinnersEmpty();
+  }
+
+  async function passWinner(id, btn){
+    const reason = prompt('Why are you passing on this?') || null;
+    btn.closest('.winner-actions').querySelectorAll('button').forEach(b => b.disabled = true);
+    const result = await killItemWithReason(sbClient, id, reason);
+    if(result.error){ console.error('pass failed', result.error); btn.closest('.winner-actions').querySelectorAll('button').forEach(b => b.disabled = false); return; }
+    const cardEl = document.getElementById(`winner-${id}`);
+    if(cardEl) cardEl.remove();
+    checkWinnersEmpty();
+  }
+
+  function checkWinnersEmpty(){
+    const list = document.querySelector('.winners-list');
+    if(list && !list.children.length){
+      document.getElementById('winners-wrap').innerHTML = `<div class="carousel-empty">Nothing's cleared the bar yet today.</div>`;
+    }
   }
 
   async function loadProjects(){
@@ -176,20 +211,6 @@
           ? `<a class="proj-row" href="${p.url}" target="_blank">${inner}</a>`
           : `<div class="proj-row">${inner}</div>`;
       }).join("");
-    } catch(err){ el.innerHTML = `<p class="empty-note">Couldn't load.</p>`; }
-  }
-
-  async function loadIdeasFeed(){
-    const el = document.getElementById('ideas-feed');
-    try{
-      const [inv, syn] = await Promise.all([
-        sbClient.from('inventor_ideas').select('title,priority_reasoning,created_at').eq('priority_flag','act_now'),
-        sbClient.from('synthesis_ideas').select('title,priority_reasoning,created_at').eq('priority_flag','act_now')
-      ]);
-      const combined = [...(inv.data||[]), ...(syn.data||[])].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
-      el.innerHTML = combined.length
-        ? combined.map(i => `<div class="idea-card"><div class="idea-title">${i.title}</div><div class="idea-sub">${i.priority_reasoning||''}</div></div>`).join("")
-        : `<p class="empty-note">Nothing flagged right now.</p>`;
     } catch(err){ el.innerHTML = `<p class="empty-note">Couldn't load.</p>`; }
   }
 
@@ -218,9 +239,8 @@
     }
   }
 
-  loadCarousel();
+  loadWinners();
   loadProjects();
-  loadIdeasFeed();
   checkEngineStatus();
 </script>
 <script src="/tabbar.js"></script>

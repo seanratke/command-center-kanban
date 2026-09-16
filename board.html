@@ -374,6 +374,7 @@ if ("serviceWorker" in navigator) {
 <div class="wrap" id="app"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/item-actions.js"></script>
 <script>
 const SUPABASE_URL = 'https://yxfwduvwhruedjyrtfhx.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy';
@@ -495,16 +496,21 @@ function moveStage(item, dir) {
   const idx = STAGES.findIndex(s => s.key === item.stage);
   const nextIdx = idx + dir;
   if (nextIdx < 0 || nextIdx >= STAGES.length) return;
+  const fromStage = item.stage;
   item.stage = STAGES[nextIdx].key;
   touchItem(item);
-  persistItem(item);
+  if (dir === 1) {
+    advanceItemStage(sbClient, item.id, fromStage).catch(err => console.error('advance failed', err));
+  } else {
+    persistItem(item);
+  }
   render();
 }
 
 function killItem(item) {
   item.stage = 'killed';
   touchItem(item);
-  persistItem(item);
+  killItemWithReason(sbClient, item.id, item.killReason || null).catch(err => console.error('kill failed', err));
   render();
 }
 
@@ -544,7 +550,7 @@ function saveModal() {
 function killFromModal(item) {
   item.stage = 'killed';
   touchItem(item);
-  persistItem(item);
+  killItemWithReason(sbClient, item.id, item.killReason || null).catch(err => console.error('kill failed', err));
   renderModalOnly();
 }
 
