@@ -127,6 +127,7 @@ export async function runReviewAction(
       if (result.participation_path) update.participation_path = result.participation_path;
       if (result.status === "approved" || result.status === "rejected") {
         update.priority_flag = result.priority_flag || null;
+        update.priority_tier = result.priority_tier || null;
         update.priority_reasoning = result.priority_reasoning || null;
         update.next_move = result.next_move || null;
       }
@@ -151,6 +152,7 @@ export async function runReviewAction(
       if (result.status === "rejected") update.rejection_report = result.rejection_report || null;
       if (result.status === "approved" || result.status === "rejected") {
         update.priority_flag = result.priority_flag || null;
+        update.priority_tier = result.priority_tier || null;
         update.priority_reasoning = result.priority_reasoning || null;
         update.next_move = result.next_move || null;
       }
