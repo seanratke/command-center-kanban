@@ -47,6 +47,13 @@
 
   .section-label { font-size:10.5px; font-weight:600; color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.05em; margin:0 0 10px; }
 
+  .needsyou-list { margin-bottom:20px; }
+  .needsyou-card { display:flex; justify-content:space-between; align-items:center; gap:10px; background:var(--card); border:1px solid var(--border); border-left:3px solid var(--violet); border-radius:12px; padding:11px 13px; margin-bottom:7px; }
+  .needsyou-text { flex:1; min-width:0; }
+  .needsyou-title { font-size:12.5px; font-weight:500; line-height:1.4; }
+  .needsyou-sub { font-size:11px; color:var(--ink-muted); line-height:1.4; margin-top:2px; }
+  .needsyou-copy { flex:none; padding:6px 12px; border-radius:999px; border:1.5px solid var(--violet); background:transparent; color:var(--violet); font-size:11px; font-weight:600; cursor:pointer; font-family:inherit; }
+
   .winners-list { margin-bottom:24px; }
   .winner-card { background:var(--card); border:1px solid var(--border); border-left:3px solid var(--red); border-radius:14px; padding:14px; margin-bottom:10px; }
   .winner-card.tier-high { border-left-color:var(--amber); }
@@ -106,6 +113,9 @@
     </a>
   </div>
 
+  <div class="section-label">Needs you</div>
+  <div id="needsyou-wrap"><div class="carousel-empty">Loading…</div></div>
+
   <div class="section-label" id="ideas">What to do right now</div>
   <div id="winners-wrap"><div class="carousel-empty">Loading…</div></div>
 
@@ -122,6 +132,42 @@
     'https://yxfwduvwhruedjyrtfhx.supabase.co',
     'sb_publishable_aPBSSNTuFRAk0FXsiLq-wQ_J_QMcqCy'
   );
+
+  function escapeAttr(str){ return (str || "").replace(/"/g, "&quot;"); }
+
+  function needsYouCardHtml({title, sub, copyText}){
+    const copyBtn = copyText
+      ? `<button class="needsyou-copy" onclick="navigator.clipboard.writeText(this.dataset.text); this.textContent='Copied';" data-text="${escapeAttr(copyText)}">Copy to paste</button>`
+      : "";
+    return `
+      <div class="needsyou-card">
+        <div class="needsyou-text">
+          <div class="needsyou-title">${title}</div>
+          ${sub ? `<div class="needsyou-sub">${sub}</div>` : ""}
+        </div>
+        ${copyBtn}
+      </div>`;
+  }
+
+  async function loadNeedsYou(){
+    const wrap = document.getElementById('needsyou-wrap');
+    try{
+      const [pending, approval] = await Promise.all([
+        sbClient.from('pending_actions').select('*').eq('status','open').order('created_at',{ascending:true}),
+        sbClient.from('items').select('title,approval_note').eq('awaiting_approval', true)
+      ]);
+      if(pending.error) throw pending.error;
+      if(approval.error) throw approval.error;
+
+      const cards = [];
+      (pending.data || []).forEach(p => cards.push(needsYouCardHtml({ title: p.instruction, copyText: p.paste_content || null })));
+      (approval.data || []).forEach(i => cards.push(needsYouCardHtml({ title: `Decide: ${i.title}`, sub: i.approval_note })));
+
+      wrap.innerHTML = cards.length
+        ? `<div class="needsyou-list">${cards.join("")}</div>`
+        : `<div class="carousel-empty">Nothing waiting on you right now.</div>`;
+    } catch(err){ wrap.innerHTML = `<div class="carousel-empty">Couldn't load.</div>`; }
+  }
 
   const TIER_LABELS = { critical: 'Critical -- act today', high: 'High -- act soon' };
   const TIER_RANK = { critical: 0, high: 1 };
@@ -239,6 +285,7 @@
     }
   }
 
+  loadNeedsYou();
   loadWinners();
   loadProjects();
   checkEngineStatus();
