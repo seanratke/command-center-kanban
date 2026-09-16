@@ -5,6 +5,10 @@
       "schedule": "0 14 * * *"
     },
     {
+      "path": "/api/inbox-review-cron",
+      "schedule": "0 14 * * *"
+    },
+    {
       "path": "/api/inventor-pool",
       "schedule": "0 15 * * 1"
     },
@@ -48,6 +52,9 @@
   ],
   "functions": {
     "api/run-opportunity-engine.ts": {
+      "maxDuration": 800
+    },
+    "api/inbox-review-cron.ts": {
       "maxDuration": 800
     }
   }
