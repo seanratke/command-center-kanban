@@ -23,6 +23,10 @@
   ],
   "rewrites": [
     {
+      "source": "/capture",
+      "destination": "/capture.html"
+    },
+    {
       "source": "/opportunities",
       "destination": "/opportunities.html"
     },
