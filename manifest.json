@@ -5,16 +5,17 @@
   "display": "standalone",
   "background_color": "#F6F5F1",
   "theme_color": "#F6F5F1",
-  "icons": [
+  "shortcuts": [
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "name": "Capture idea",
+      "short_name": "Idea",
+      "description": "Open the Command Center idea inbox",
+      "url": "/board",
+      "icons": [{"src":"/icon-192.png","sizes":"192x192","type":"image/png"}]
     }
+  ],
+  "icons": [
+    {"src":"/icon-192.png","sizes":"192x192","type":"image/png"},
+    {"src":"/icon-512.png","sizes":"512x512","type":"image/png"}
   ]
 }
