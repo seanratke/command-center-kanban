@@ -12,6 +12,6 @@ label{font-size:13px;font-weight:650;display:block;margin-bottom:7px}input{width
 button{width:100%;margin-top:12px;padding:15px;border:0;border-radius:12px;background:var(--sage);color:#fff;font-size:16px;font-weight:750}.note{font-size:12px;margin-top:16px;color:var(--muted)}.error{background:#F5E3E0;color:#7A3029;border-radius:10px;padding:10px 12px;margin:0 0 16px;font-size:13px;display:none}.error.show{display:block}
 </style></head>
 <body><main class="card"><div class="kicker">Secure front door</div><h1>Command Center</h1><p>Sign in once on this device. Your access stays active for 30 days.</p><div id="error" class="error">That password didn't work. Try again.</div>
-<form method="POST" action="/api/login"><label for="password">Command Center password</label><input id="password" name="password" type="password" autocomplete="current-password" required autofocus><button type="submit">Open Command Center</button></form>
+<form method="POST" action="/api/login"><label for="password">Command Center password</label><input id="password" name="password" type="password" autocomplete="current-password" required autofocus><button type="submit">Open Command Center</button></form><div class="note">New phone? Trusted-device approval is coming here. Until verified, password access remains the only accepted path.</div>
 <div class="note">Protected access · password is never placed in the URL.</div></main>
 <script>if(new URLSearchParams(location.search).get('error')==='1')document.getElementById('error').classList.add('show')</script></body></html>
