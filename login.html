@@ -1,9 +1,17 @@
-<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Sign in</title></head>
-<body style="font-family:sans-serif;max-width:320px;margin:80px auto;padding:0 20px;">
-  <h2>Command Center</h2>
-  <form method="POST" action="/api/login">
-    <input type="password" name="password" placeholder="Password" style="width:100%;padding:10px;margin-bottom:10px;" required autofocus>
-    <button type="submit" style="width:100%;padding:10px;">Enter</button>
-  </form>
-</body></html>
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#F6F5F1"><title>Command Center · Sign in</title>
+<style>
+:root{--paper:#F6F5F1;--card:#fff;--ink:#25241F;--muted:#6E6C61;--border:#E1DED4;--sage:#3F5B4C}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:system-ui,-apple-system,sans-serif;min-height:100vh;display:grid;place-items:center;padding:24px}
+.card{width:min(100%,430px);background:var(--card);border:1px solid var(--border);border-radius:22px;padding:26px;box-shadow:0 12px 35px rgba(37,36,31,.08)}
+.kicker{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--sage);font-weight:750}h1{font-size:28px;margin:7px 0 8px}p{color:var(--muted);line-height:1.5;margin:0 0 22px}
+label{font-size:13px;font-weight:650;display:block;margin-bottom:7px}input{width:100%;font-size:18px;padding:15px 14px;border:1.5px solid var(--border);border-radius:12px;background:#fff}input:focus{outline:3px solid #E4ECE7;border-color:var(--sage)}
+button{width:100%;margin-top:12px;padding:15px;border:0;border-radius:12px;background:var(--sage);color:#fff;font-size:16px;font-weight:750}.note{font-size:12px;margin-top:16px;color:var(--muted)}.error{background:#F5E3E0;color:#7A3029;border-radius:10px;padding:10px 12px;margin:0 0 16px;font-size:13px;display:none}.error.show{display:block}
+</style></head>
+<body><main class="card"><div class="kicker">Secure front door</div><h1>Command Center</h1><p>Sign in once on this device. Your access stays active for 30 days.</p><div id="error" class="error">That password didn't work. Try again.</div>
+<form method="POST" action="/api/login"><label for="password">Command Center password</label><input id="password" name="password" type="password" autocomplete="current-password" required autofocus><button type="submit">Open Command Center</button></form>
+<div class="note">Protected access · password is never placed in the URL.</div></main>
+<script>if(new URLSearchParams(location.search).get('error')==='1')document.getElementById('error').classList.add('show')</script></body></html>

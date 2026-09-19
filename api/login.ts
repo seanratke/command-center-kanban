@@ -1,4 +1,4 @@
-// api/login.ts
+﻿// api/login.ts
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import crypto from "node:crypto";
 
@@ -10,7 +10,8 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
     res.writeHead(302, { Location: "/" });
     res.end();
   } else {
-    res.writeHead(302, { Location: "/login.html" });
+    res.writeHead(303, { Location: "/login.html?error=1" });
     res.end();
   }
 }
+
