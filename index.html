@@ -30,7 +30,22 @@
     min-height:100vh;
     padding-bottom:70px;
   }
-  .wrap { max-width:520px; margin:0 auto; padding:20px 16px 20px; }
+  .wrap { max-width:1180px; margin:0 auto; padding:24px 20px 40px; }
+  .home-grid { display:grid; grid-template-columns:minmax(0,1.55fr) minmax(280px,.8fr); gap:22px; align-items:start; }
+  .main-stack,.side-stack { min-width:0; }
+  .system-map { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; }
+  .system-card { display:block; background:var(--card); border:1px solid var(--border); border-radius:14px; padding:13px; text-decoration:none; color:inherit; }
+  .system-kicker { font-size:9.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-muted); font-weight:600; }
+  .system-name { font-family:'Fraunces',serif; font-size:15px; font-weight:700; margin-top:3px; }
+  .system-state { font-size:11px; color:var(--ink-muted); margin-top:3px; line-height:1.35; }
+  .system-card.synapse { border-top:3px solid var(--sage); }
+  .system-card.forge { border-top:3px solid var(--amber); }
+  .system-card.vault { border-top:3px solid var(--violet); }
+  .orientation { background:var(--ink); color:#fff; border-radius:18px; padding:18px; margin-bottom:18px; }
+  .orientation-label { font-size:10px; text-transform:uppercase; letter-spacing:.08em; opacity:.68; }
+  .orientation h1 { font-family:'Fraunces',serif; font-size:24px; margin:5px 0 5px; }
+  .orientation p { font-size:12.5px; line-height:1.5; opacity:.8; margin:0; }
+  @media(max-width:760px){ .wrap{max-width:520px;padding:18px 16px 24px}.home-grid{display:block}.side-stack{margin-top:4px}.system-map{grid-template-columns:1fr}.system-card{padding:11px 13px}.orientation h1{font-size:21px}.desktop-only{display:none} }
 
   .wordmark { font-family:'Fraunces', serif; font-weight:700; font-size:17px; text-align:center; margin:0 0 18px; }
 
@@ -88,6 +103,16 @@
 <body>
 <div class="wrap">
   <div class="wordmark">Command Center</div>
+  <section class="orientation">
+    <div class="orientation-label">SYNAPSE · second brain</div>
+    <h1>Your systems, one front door.</h1>
+    <p>Start here. SYNAPSE keeps context and priorities. FORGE invents and investigates. Enforcer surfaces only the decisions that genuinely need you.</p>
+  </section>
+  <div class="system-map">
+    <a class="system-card synapse" href="#projects"><div class="system-kicker">Second brain</div><div class="system-name">SYNAPSE</div><div class="system-state">Context · priorities · projects · next moves</div></a>
+    <a class="system-card forge" href="/opportunities"><div class="system-kicker">Invention machine</div><div class="system-name">FORGE</div><div class="system-state">Opportunities · evidence · experiments · inventions</div></a>
+    <a class="system-card vault" href="/needs"><div class="system-kicker">Control layer</div><div class="system-name">ENFORCER</div><div class="system-state">Human gates · verification · execution truth</div></a>
+  </div>
 
   <div class="engine-status" id="engine-status">
     <div class="engine-status-dot"></div>
@@ -113,6 +138,7 @@
     </a>
   </div>
 
+  <div class="home-grid"><main class="main-stack">
   <div class="section-label">Needs you</div>
   <div id="needsyou-wrap"><div class="carousel-empty">Loading…</div></div>
 
@@ -124,6 +150,12 @@
     <a class="view-all" href="/board">View all →</a>
   </div>
   <div id="proj-list"><p class="empty-note">Loading…</p></div>
+  </main><aside class="side-stack desktop-only">
+    <div class="section-label">How to use this</div>
+    <div class="system-card synapse"><div class="system-name">Ask / orient</div><div class="system-state">Use SYNAPSE when you need context, priorities, recovery, or the next move.</div></div>
+    <div class="system-card forge" style="margin-top:10px"><div class="system-name">Invent / investigate</div><div class="system-state">Enter FORGE when you want to explore opportunities, evidence, experiments, and inventions.</div></div>
+    <div class="system-card vault" style="margin-top:10px"><div class="system-name">Human gate</div><div class="system-state">If Enforcer needs you, it appears in Needs you. Otherwise the machinery keeps the interruption away from you.</div></div>
+  </aside></div>
 </div>
 
 <script src="/item-actions.js"></script>
